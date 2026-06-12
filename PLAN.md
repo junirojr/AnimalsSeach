@@ -227,23 +227,23 @@ Complementa os `CLAUDE.md` com contexto rico que a IA precisa para tomar boas de
 ## Modelo de Domínio — Animal
 
 ```csharp
-// Buscador.Domain/Animals/Animal.cs
-public sealed class Animal : AggregateRoot<AnimalId>
+// Buscador.Domain/Animais/Animal.cs
+public sealed class Animal : RaizAgregada<AnimalId>
 {
-    public string CommonName { get; private set; }           // "Leão"
-    public string ScientificName { get; private set; }       // "Panthera leo"
-    public string Description { get; private set; }          // Texto narrativo longo
-    public string Characteristics { get; private set; }      // Traços físicos
-    public Diet Diet { get; private set; }                   // enum: Carnívoro/Herbívoro/Onívoro
+    public string NomeComum { get; private set; }            // "Leão"
+    public string NomeCientifico { get; private set; }       // "Panthera leo"
+    public string Descricao { get; private set; }            // Texto narrativo longo
+    public string Caracteristicas { get; private set; }      // Traços físicos
+    public Dieta Dieta { get; private set; }                 // enum: Carnivoro/Herbivoro/Onivoro
     public Habitat Habitat { get; private set; }             // enum: Floresta/Oceano/Deserto/etc.
-    public string GeographicDistribution { get; private set; }
-    public ConservationStatus ConservationStatus { get; private set; } // enum: IUCN
+    public string DistribuicaoGeografica { get; private set; }
+    public StatusConservacao StatusConservacao { get; private set; } // enum: IUCN
     public string[] Tags { get; private set; }               // ["mamífero", "predador", "felino"]
-    public string Curiosities { get; private set; }          // Fatos curiosos
+    public string Curiosidades { get; private set; }         // Fatos curiosos
 
-    // Campos de busca — gerenciados pela Infrastructure
-    public NpgsqlTsVector SearchVector { get; private set; } // FTS (gerado por trigger no banco)
-    public Vector? Embedding { get; private set; }           // Vetor semântico (768 dimensões)
+    // Campos de busca: VetorBusca (tsvector) e Embedding (vector 768) NÃO ficam nesta classe.
+    // São shadow properties mapeadas via Fluent API na Infrastructure (Fase 2), para manter o
+    // Domain limpo (sem dependência de Npgsql/pgvector).
 }
 ```
 
@@ -252,25 +252,25 @@ public sealed class Animal : AggregateRoot<AnimalId>
 ## Endpoints da API
 
 ```
-GET  /api/animals/search?q=...&mode=fulltext|semantic|hybrid  # Busca principal
-GET  /api/animals/{id}                                         # Detalhes de um animal
-GET  /api/animals?page=1&size=20                               # Listagem paginada
-POST /api/animals/seed                                         # Popular banco com dados exemplo
-POST /api/animals/embeddings/generate                          # Gerar embeddings (Ollama)
+GET  /api/animais/buscar?q=...&modo=textual|semantica|hibrida  # Busca principal
+GET  /api/animais/{id}                                          # Detalhes de um animal
+GET  /api/animais?pagina=1&tamanho=20                           # Listagem paginada
+POST /api/animais/popular                                       # Popular banco com dados exemplo
+POST /api/animais/embeddings/gerar                              # Gerar embeddings (Ollama)
 ```
 
 ---
 
 ## Casos de Uso (CQRS com MediatR)
 
-**Queries:**
-- `SearchAnimalsQuery` — busca híbrida com modo configurável
-- `GetAnimalByIdQuery`
-- `GetAnimalsQuery` (paginada)
+**Consultas (Queries):**
+- `BuscarAnimaisConsulta` — busca híbrida com modo configurável
+- `ObterAnimalPorIdConsulta`
+- `ObterAnimaisConsulta` (paginada)
 
-**Commands:**
-- `SeedAnimalsCommand` — insere ~50 animais pré-definidos
-- `GenerateEmbeddingsCommand` — chama Ollama e popula coluna `Embedding`
+**Comandos (Commands):**
+- `PopularAnimaisComando` — insere os animais pré-definidos (10 no MVP, expande para 50)
+- `GerarEmbeddingsComando` — chama Ollama e popula a coluna `embedding`
 
 ---
 
@@ -344,48 +344,48 @@ POST /api/animals/embeddings/generate                          # Gerar embedding
 
 ```
 Buscador.Domain.Tests/
-  Animals/
+  Animais/
     AnimalTests.cs           # Testa regras de negócio do aggregate
     AnimalIdTests.cs         # Testa value object
 
 Buscador.Application.Tests/
-  Animals/
-    SearchAnimalsHandlerTests.cs   # Moq do repositório e serviços
-    SeedAnimalsHandlerTests.cs
+  Animais/
+    BuscarAnimaisManipuladorTests.cs   # Moq do repositório e serviços
+    PopularAnimaisManipuladorTests.cs
 
 Buscador.Api.Tests/
-  Animals/
-    SearchEndpointTests.cs         # WebApplicationFactory + Testcontainers
-    SeedEndpointTests.cs
+  Animais/
+    BuscarEndpointTests.cs         # WebApplicationFactory + Testcontainers
+    PopularEndpointTests.cs
   Fixtures/
     ApiTestFixture.cs              # Classe base: inicia container PostgreSQL
 ```
 
-**Padrão de nomenclatura de testes:**
+**Padrão de nomenclatura de testes (em português, sem acento):**
 ```csharp
-// Método_Cenário_ResultadoEsperado
-public void Search_WithMatchingKeyword_ReturnsRelevantAnimals() { }
-public void Search_WithEmptyQuery_ThrowsValidationException() { }
+// Metodo_Cenario_ResultadoEsperado
+public void Buscar_ComPalavraChaveCorrespondente_RetornaAnimaisRelevantes() { }
+public void Buscar_ComConsultaVazia_LancaValidationException() { }
 ```
 
 ### Frontend
 
 ```
-src/components/search/
-  SearchBar.test.tsx         # Renderização, input, debounce
+src/components/busca/
+  BarraBusca.test.tsx        # Renderização, input, debounce
 
-src/components/animals/
-  AnimalCard.test.tsx        # Renderização de dados do animal
+src/components/animais/
+  CartaoAnimal.test.tsx      # Renderização de dados do animal
 
 e2e/
-  search.spec.ts             # Playwright: digitar, ver resultados, mudar modo
+  busca.spec.ts              # Playwright: digitar, ver resultados, mudar modo
 ```
 
 **MSW para mock da API nos testes de componente:**
 ```ts
 // tests/mocks/handlers.ts
-rest.get('/api/animals/search', (req, res, ctx) => {
-  return res(ctx.json({ items: mockAnimals }))
+http.get('/api/animais/buscar', () => {
+  return HttpResponse.json({ itens: animaisMock })
 })
 ```
 
@@ -492,11 +492,11 @@ podem ficar versionadas no `appsettings.json` / `docker-compose.yml`.
 
 1. **Subir infra**: `docker-compose up -d`
 2. **Migrations**: `dotnet ef database update` na pasta Api
-3. **Seed**: `POST /api/animals/seed` via Scalar UI
-4. **Gerar embeddings**: `POST /api/animals/embeddings/generate` (aguarda Ollama)
-5. **Testar FTS**: `GET /api/animals/search?q=carnívoro+savana&mode=fulltext`
-6. **Testar semântica**: `GET /api/animals/search?q=animal+que+vive+em+grupo+e+caça+em+bando&mode=semantic`
-7. **Testar híbrido**: mesma query com `mode=hybrid`, comparar ranking
+3. **Seed**: `POST /api/animais/popular` via Scalar UI
+4. **Gerar embeddings**: `POST /api/animais/embeddings/gerar` (aguarda Ollama)
+5. **Testar FTS**: `GET /api/animais/buscar?q=carnívoro+savana&modo=textual`
+6. **Testar semântica**: `GET /api/animais/buscar?q=animal+que+vive+em+grupo+e+caça+em+bando&modo=semantica`
+7. **Testar híbrido**: mesma query com `modo=hibrida`, comparar ranking
 8. **Testes backend**: `dotnet test` na pasta `backend/`
 9. **Frontend**: abrir `http://localhost:3000`, buscar e comparar os três modos
 10. **Testes frontend**: `npm test` + `npx playwright test`

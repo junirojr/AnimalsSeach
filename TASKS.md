@@ -24,8 +24,16 @@
 
 ## REGRAS GLOBAIS (valem para TODA task)
 
-- **Idioma do código**: inglês (nomes de classes, métodos, variáveis, arquivos).
-- **Idioma dos dados/documentação**: português (conteúdo dos animais, docs, comentários explicativos).
+- **Idioma do código**: **português SEM acento** (classes, métodos, variáveis, propriedades, arquivos).
+  Ex.: `NomeComum`, `BuscarAsync`, `RepositorioAnimal`. Mantenha as convenções de C#
+  (PascalCase para tipos/métodos/propriedades, camelCase para variáveis locais). **Nunca** use
+  acento ou cedilha em identificador (`Descricao`, não `Descrição`).
+- **Idioma dos dados, documentação e comentários**: português (pode ter acento — é texto, não código).
+- **Termos que NÃO se traduzem** (linguagem/biblioteca): `Task`, `CancellationToken`, `IRequest`,
+  `DbContext`, `Guid`, palavras-chave do C#, nomes de pacotes NuGet. O sufixo `Dto` e a abreviação
+  `Id` são mantidos. O termo técnico `Embedding` é mantido.
+- **Nomenclatura padronizada:** use sempre os nomes do `GLOSSÁRIO` abaixo. Tudo em português,
+  inclusive **rotas HTTP** (`/api/animais/buscar`) e **campos JSON** (`nomeComum`).
 - **Regra de dependência (Clean Architecture)** — NUNCA viole:
   `Domain` → não depende de ninguém.
   `Application` → depende só de `Domain`.
@@ -60,6 +68,126 @@
   (`gh auth login` ou Personal Access Token). Não tente contornar.
 
 > A configuração inicial do Git (init, `.gitignore`, remote, 1º commit) é a task **T0.9**.
+
+---
+
+## GLOSSÁRIO DE NOMENCLATURA (EN → PT, sem acento)
+
+> **Autoritativo.** Use exatamente estes nomes em todas as fases. Em caso de dúvida sobre um nome
+> não listado, traduza para português sem acento mantendo o padrão (PascalCase em tipos/membros).
+>
+> **Exceções (mantidos em inglês):** os nomes das **camadas/projetos** já criados na Fase 0 —
+> `Buscador.Domain`, `Buscador.Application`, `Buscador.Infrastructure`, `Buscador.Api` e os
+> projetos de teste — **não** mudam (são termos de arquitetura e já existem). As **pastas internas**
+> e todos os identificadores são em português: `Common`→`Comum`, `Animals`→`Animais`,
+> `Persistence`→`Persistencia`, `Search`→`Busca`, `Queries`→`Consultas`, `Commands`→`Comandos`,
+> `Configurations`→`Configuracoes`, `Contracts`→`Contratos` (mantém `Endpoints`, `Fixtures`).
+
+**Padrões / sufixos de arquitetura**
+
+| Inglês | Português |
+|--------|-----------|
+| `Entity<TId>` | `Entidade<TId>` |
+| `AggregateRoot<TId>` | `RaizAgregada<TId>` |
+| `ValueObject` | `ObjetoDeValor` |
+| `Repository` / `IRepository` | `Repositorio` / `IRepositorio` |
+| `Query` (CQRS) | `Consulta` |
+| `Command` (CQRS) | `Comando` |
+| `Handler` | `Manipulador` |
+| `Service` / `IService` | `Servico` / `IServico` |
+| `Configuration` (EF) | `Configuracao` |
+| `Validator` | `Validador` |
+| `Dto` | `Dto` (mantido) |
+
+**Domínio — tipos**
+
+| Inglês | Português |
+|--------|-----------|
+| `Animal` | `Animal` |
+| `AnimalId` | `AnimalId` (mantido) |
+| `Diet` | `Dieta` → `Carnivoro`, `Herbivoro`, `Onivoro` |
+| `Habitat` | `Habitat` → `Floresta`, `Oceano`, `Deserto`, `Savana`, `Montanha`, `AguaDoce`, `Polar` |
+| `ConservationStatus` | `StatusConservacao` → `PoucoPreocupante`, `QuaseAmeacado`, `Vulneravel`, `EmPerigo`, `CriticamenteEmPerigo`, `ExtintoNaNatureza`, `Extinto` |
+
+**Animal — propriedades**
+
+| Inglês | Português |
+|--------|-----------|
+| `CommonName` | `NomeComum` |
+| `ScientificName` | `NomeCientifico` |
+| `Description` | `Descricao` |
+| `Characteristics` | `Caracteristicas` |
+| `Diet` | `Dieta` |
+| `Habitat` | `Habitat` |
+| `GeographicDistribution` | `DistribuicaoGeografica` |
+| `ConservationStatus` | `StatusConservacao` |
+| `Tags` | `Tags` (mantido) |
+| `Curiosities` | `Curiosidades` |
+| `SearchVector` | `VetorBusca` (Fase 2, shadow) |
+| `Embedding` | `Embedding` (mantido) |
+
+**Métodos comuns**
+
+| Inglês | Português |
+|--------|-----------|
+| `Create` | `Criar` |
+| `New` / `From` / `Value` | `Novo` / `De` / `Valor` |
+| `GetEqualityComponents` | `ObterComponentesDeIgualdade` |
+| `GetByIdAsync` | `ObterPorIdAsync` |
+| `AddAsync` / `AddRangeAsync` | `AdicionarAsync` / `AdicionarVariosAsync` |
+| `GetPagedAsync` | `ObterPaginadoAsync` |
+| `ToDto` | `ParaDto` |
+| `SearchAsync` / `GenerateAsync` | `BuscarAsync` / `GerarAsync` |
+
+**Casos de uso (CQRS) e busca**
+
+| Inglês | Português |
+|--------|-----------|
+| `SearchAnimalsQuery` | `BuscarAnimaisConsulta` |
+| `GetAnimalByIdQuery` | `ObterAnimalPorIdConsulta` |
+| `GetAnimalsQuery` | `ObterAnimaisConsulta` |
+| `SeedAnimalsCommand` | `PopularAnimaisComando` |
+| `GenerateEmbeddingsCommand` | `GerarEmbeddingsComando` |
+| `...Handler` | `...Manipulador` |
+| `SearchMode` | `ModoBusca` → `Textual`, `Semantica`, `Hibrida` |
+| `AnimalDto` | `AnimalDto` |
+| `SearchResultDto` (`Score`) | `ResultadoBuscaDto` (`Pontuacao`) |
+| `AnimalSeedData` | `DadosSementeAnimal` |
+
+**Serviços e Infrastructure**
+
+| Inglês | Português |
+|--------|-----------|
+| `IFullTextSearchService` / impl | `IServicoBuscaTextual` / `ServicoBuscaTextual` |
+| `ISemanticSearchService` / impl | `IServicoBuscaSemantica` / `ServicoBuscaSemantica` |
+| `IHybridSearchService` / impl | `IServicoBuscaHibrida` / `ServicoBuscaHibrida` |
+| `IEmbeddingService` / impl Ollama | `IServicoEmbedding` / `ServicoEmbeddingOllama` |
+| `AppDbContext` | `ContextoBanco` |
+| `AnimalConfiguration` | `AnimalConfiguracao` |
+| `AnimalRepository` | `RepositorioAnimal` |
+| `AddInfrastructure` / `AddApplication` | `AdicionarInfraestrutura` / `AdicionarAplicacao` |
+| `GlobalExceptionHandler` | `ManipuladorGlobalExcecoes` |
+
+**API — rotas e contrato (tudo em português)**
+
+| Inglês | Português |
+|--------|-----------|
+| `GET /api/animals/search?q=&mode=&limit=` | `GET /api/animais/buscar?q=&modo=&limite=` |
+| `GET /api/animals/{id}` | `GET /api/animais/{id}` |
+| `GET /api/animals?page=&size=` | `GET /api/animais?pagina=&tamanho=` |
+| `POST /api/animals/seed` | `POST /api/animais/popular` |
+| `POST /api/animals/embeddings/generate` | `POST /api/animais/embeddings/gerar` |
+| modos: `fulltext`/`semantic`/`hybrid` | `textual`/`semantica`/`hibrida` |
+| JSON: `items`, `commonName`, `score` | `itens`, `nomeComum`, `pontuacao` (camelCase) |
+
+**Frontend (componentes e serviços)**
+
+| Inglês | Português |
+|--------|-----------|
+| `SearchBar` / `SearchModeToggle` | `BarraBusca` / `AlternadorModoBusca` |
+| `AnimalCard` / `AnimalDetail` | `CartaoAnimal` / `DetalheAnimal` |
+| `searchAnimals` / `getAnimal` | `buscarAnimais` / `obterAnimal` |
+| types `Animal` / `SearchResult` | `Animal` / `ResultadoBusca` |
 
 ---
 
@@ -195,7 +323,7 @@ dotnet new gitignore        # gera .gitignore padrão .NET na raiz
 > 🎓 **Conceito:** o Domain é o coração do sistema — só regras de negócio, sem banco, sem
 > framework. *Entity* tem identidade (dois animais com mesmo Id são "o mesmo"). *Value Object*
 > não tem identidade, vale pelo conteúdo (ex.: `AnimalId`). *Aggregate Root* é a entidade
-> "porta de entrada" que controla suas invariantes. Usamos método de fábrica `Create(...)` em
+> "porta de entrada" que controla suas invariantes. Usamos método de fábrica `Criar(...)` em
 > vez de construtor público para garantir que um `Animal` nunca nasça inválido.
 
 > 🪟 **Execução em janelas separadas** (para não esgotar o contexto e evitar alucinação nas tasks finais):
@@ -205,53 +333,56 @@ dotnet new gitignore        # gera .gitignore padrão .NET na raiz
 > | Janela | Tasks | Fecha com |
 > |--------|-------|-----------|
 > | **1A** | T1.1, T1.2, T1.3 (base classes, `AnimalId`, enums) | `dotnet build` 0 erros → commit |
-> | **1B** | T1.4, T1.5 (`Animal` aggregate, `IAnimalRepository`) | `dotnet build` 0 erros → commit |
+> | **1B** | T1.4, T1.5 (`Animal` aggregate, `IRepositorioAnimal`) | `dotnet build` 0 erros → commit |
 > | **1C** | T1.6, T1.7 (testes do Domain + docs) | `dotnet test` verde → commit → **push** (fim da fase) |
 >
 > Regra geral: fases longas devem ser quebradas assim — lotes de 2-3 tasks por janela, sempre
 > terminando em build/teste verde + commit.
 
-### [ ] T1.1 — Base classes: `Entity<TId>`, `AggregateRoot<TId>`, `ValueObject`
+### [ ] T1.1 — Base classes: `Entidade<TId>`, `RaizAgregada<TId>`, `ObjetoDeValor`
 **Objetivo:** blocos base de DDD.
 **Dep:** T0.4.
-**Arquivos:** `src/Buscador.Domain/Common/Entity.cs`, `AggregateRoot.cs`, `ValueObject.cs`.
+**Arquivos:** `src/Buscador.Domain/Comum/Entidade.cs`, `RaizAgregada.cs`, `ObjetoDeValor.cs`.
 **Passos:**
-- `Entity<TId>`: propriedade `Id` (tipo genérico `TId`), igualdade por `Id` (override `Equals`/`GetHashCode`).
-- `AggregateRoot<TId>`: herda de `Entity<TId>`.
-- `ValueObject`: classe abstrata com igualdade estrutural (método abstrato `GetEqualityComponents()` retornando `IEnumerable<object>`).
+- `Entidade<TId>`: propriedade `Id` (tipo genérico `TId`), igualdade por `Id` (override `Equals`/`GetHashCode`).
+- `RaizAgregada<TId>`: herda de `Entidade<TId>`.
+- `ObjetoDeValor`: classe abstrata com igualdade estrutural (método abstrato `ObterComponentesDeIgualdade()` retornando `IEnumerable<object>`).
 **DoD:** `dotnet build` 0 erros.
 
 ### [ ] T1.2 — Value Object `AnimalId`
 **Objetivo:** identificador tipado.
 **Dep:** T1.1.
-**Arquivo:** `src/Buscador.Domain/Animals/AnimalId.cs`.
-**Passos:** `record`/`ValueObject` que encapsula um `Guid Value`. Método estático `New()` que gera novo Guid e `From(Guid)`.
+**Arquivo:** `src/Buscador.Domain/Animais/AnimalId.cs`.
+**Passos:** `record`/`ObjetoDeValor` que encapsula um `Guid Valor`. Método estático `Novo()` que gera novo Guid e `De(Guid)`.
 **DoD:** build 0 erros.
 
 ### [ ] T1.3 — Enums do domínio
-**Objetivo:** `Diet`, `Habitat`, `ConservationStatus`.
+**Objetivo:** `Dieta`, `Habitat`, `StatusConservacao`.
 **Dep:** T0.4.
-**Arquivos:** `src/Buscador.Domain/Animals/Diet.cs`, `Habitat.cs`, `ConservationStatus.cs`.
+**Arquivos:** `src/Buscador.Domain/Animais/Dieta.cs`, `Habitat.cs`, `StatusConservacao.cs`.
 **Passos:**
-- `Diet`: `Carnivore`, `Herbivore`, `Omnivore`.
-- `Habitat`: `Forest`, `Ocean`, `Desert`, `Savanna`, `Mountain`, `Freshwater`, `Polar` (cobrir os principais).
-- `ConservationStatus`: escala IUCN — `LeastConcern`, `NearThreatened`, `Vulnerable`, `Endangered`, `CriticallyEndangered`, `ExtinctInWild`, `Extinct`.
+- `Dieta`: `Carnivoro`, `Herbivoro`, `Onivoro`.
+- `Habitat`: `Floresta`, `Oceano`, `Deserto`, `Savana`, `Montanha`, `AguaDoce`, `Polar` (cobrir os principais).
+- `StatusConservacao`: escala IUCN — `PoucoPreocupante`, `QuaseAmeacado`, `Vulneravel`, `EmPerigo`, `CriticamenteEmPerigo`, `ExtintoNaNatureza`, `Extinto`.
 **DoD:** build 0 erros.
 
 ### [ ] T1.4 — Aggregate `Animal`
 **Objetivo:** entidade central.
 **Dep:** T1.1, T1.2, T1.3.
-**Arquivo:** `src/Buscador.Domain/Animals/Animal.cs`.
-**Passos:** seguir o modelo da seção "Modelo de Domínio" do PLAN.md, **MAS sem os campos `SearchVector` e `Embedding`** (esses são da Infrastructure e serão adicionados na Fase 2 — não referenciar Npgsql/pgvector aqui).
+**Arquivo:** `src/Buscador.Domain/Animais/Animal.cs`.
+**Passos:** seguir o modelo da seção "Modelo de Domínio" do PLAN.md (propriedades em português: `NomeComum`,
+`NomeCientifico`, `Descricao`, `Caracteristicas`, `Dieta`, `Habitat`, `DistribuicaoGeografica`,
+`StatusConservacao`, `Tags`, `Curiosidades`), **MAS sem os campos `VetorBusca` e `Embedding`** (esses
+são da Infrastructure e serão adicionados na Fase 2 — não referenciar Npgsql/pgvector aqui).
 - Propriedades com `private set`.
-- Construtor privado + método de fábrica estático `Create(...)` que valida: `CommonName` e `ScientificName` não vazios; lança `ArgumentException` se inválido.
+- Construtor privado + método de fábrica estático `Criar(...)` que valida: `NomeComum` e `NomeCientifico` não vazios; lança `ArgumentException` se inválido.
 **DoD:** build 0 erros; `Animal` não importa nenhum pacote externo.
 
-### [ ] T1.5 — Interface `IAnimalRepository`
+### [ ] T1.5 — Interface `IRepositorioAnimal`
 **Objetivo:** contrato de persistência (só assinatura).
 **Dep:** T1.4.
-**Arquivo:** `src/Buscador.Domain/Animals/IAnimalRepository.cs`.
-**Passos:** métodos assíncronos: `Task<Animal?> GetByIdAsync(AnimalId id, CancellationToken)`, `Task AddAsync(Animal, CancellationToken)`, `Task AddRangeAsync(IEnumerable<Animal>, CancellationToken)`, `Task<IReadOnlyList<Animal>> GetPagedAsync(int page, int size, CancellationToken)`. (Métodos de busca serão adicionados nas fases 4-6.)
+**Arquivo:** `src/Buscador.Domain/Animais/IRepositorioAnimal.cs`.
+**Passos:** métodos assíncronos: `Task<Animal?> ObterPorIdAsync(AnimalId id, CancellationToken)`, `Task AdicionarAsync(Animal, CancellationToken)`, `Task AdicionarVariosAsync(IEnumerable<Animal>, CancellationToken)`, `Task<IReadOnlyList<Animal>> ObterPaginadoAsync(int pagina, int tamanho, CancellationToken)`. (Métodos de busca serão adicionados nas fases 4-6.)
 **DoD:** build 0 erros.
 
 ### [ ] T1.6 — Testes unitários do Domain
@@ -259,19 +390,20 @@ dotnet new gitignore        # gera .gitignore padrão .NET na raiz
 **Dep:** T1.4, T1.2.
 **Passos:**
 1. Em `tests/Buscador.Domain.Tests` adicionar pacote `FluentAssertions`: `dotnet add tests/Buscador.Domain.Tests package FluentAssertions`.
-2. Criar `Animals/AnimalTests.cs` e `Animals/AnimalIdTests.cs`.
-3. Testes (nome `Metodo_Cenario_Resultado`):
-   - `Create_WithValidData_ReturnsAnimal`
-   - `Create_WithEmptyCommonName_ThrowsArgumentException`
-   - `AnimalId_New_GeneratesUniqueValues`
-   - `AnimalId_WithSameValue_AreEqual`
+2. Criar `Animais/AnimalTests.cs` e `Animais/AnimalIdTests.cs`.
+3. Testes (nome `Metodo_Cenario_Resultado`, em português):
+   - `Criar_ComDadosValidos_RetornaAnimal`
+   - `Criar_ComNomeComumVazio_LancaArgumentException`
+   - `Novo_GeraValoresUnicos`
+   - `AnimalId_ComMesmoValor_SaoIguais`
 **DoD:** `dotnet test tests/Buscador.Domain.Tests` — todos verdes.
 
 ### [ ] T1.7 — Preencher `PROJECT_DOMAIN_MAP.md`
 **Objetivo:** documentar linguagem ubíqua.
 **Dep:** T1.4.
 **Arquivo:** `docs/ai/PROJECT_DOMAIN_MAP.md` + `docs/reference/domain-model.md`.
-**Passos:** descrever entidade `Animal`, VOs, enums e glossário (em português).
+**Passos:** descrever entidade `Animal`, objetos de valor, enums e glossário (em português), usando os
+nomes do `GLOSSÁRIO`.
 **DoD:** ambos os arquivos preenchidos.
 
 ---
