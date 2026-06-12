@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Buscador.Api/Buscador.Api.csproj" />
+    <Project Path="src/Buscador.Application/Buscador.Application.csproj" />
+    <Project Path="src/Buscador.Domain/Buscador.Domain.csproj" />
+    <Project Path="src/Buscador.Infrastructure/Buscador.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Buscador.Api.Tests/Buscador.Api.Tests.csproj" />
+    <Project Path="tests/Buscador.Application.Tests/Buscador.Application.Tests.csproj" />
+    <Project Path="tests/Buscador.Domain.Tests/Buscador.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

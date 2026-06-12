@@ -1,0 +1,39 @@
+# ---- .NET ----
+bin/
+obj/
+out/
+*.user
+*.suo
+*.userprefs
+[Dd]ebug/
+[Rr]elease/
+.vs/
+artifacts/
+project.lock.json
+*.nupkg
+
+# ---- Node / Next.js (frontend) ----
+node_modules/
+.next/
+/frontend/build/
+/frontend/out/
+.pnp
+.pnp.js
+coverage/
+playwright-report/
+test-results/
+.swc/
+
+# ---- Variáveis de ambiente / segredos locais ----
+.env
+.env*.local
+appsettings.*.local.json
+
+# ---- Claude Code ----
+.claude/settings.local.json
+
+# ---- Sistema operacional / IDE ----
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
