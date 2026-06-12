@@ -153,7 +153,7 @@ npx create-next-app@latest frontend --typescript --tailwind --app --eslint --src
 **Passos:** preencher com base nas seções "Context", "Stack" e "Engenharia de Contexto" do PLAN.md. (`PROJECT_DOMAIN_MAP.md` e `PROJECT_RISK_REGISTER.md` ficam como stub até a Fase 1.)
 **DoD:** os 3 arquivos têm conteúdo real (não stub).
 
-### [ ] T0.9 — Inicializar Git, `.gitignore`, remote e primeiro commit
+### [x] T0.9 — Inicializar Git, `.gitignore`, remote e primeiro commit
 **Objetivo:** colocar o projeto sob versionamento e conectar ao GitHub. Como a Fase 0 já foi
 executada, este **primeiro commit captura todo o trabalho dela**.
 **Dep:** T0.1–T0.8 concluídas e aprovadas.
@@ -197,6 +197,19 @@ dotnet new gitignore        # gera .gitignore padrão .NET na raiz
 > não tem identidade, vale pelo conteúdo (ex.: `AnimalId`). *Aggregate Root* é a entidade
 > "porta de entrada" que controla suas invariantes. Usamos método de fábrica `Create(...)` em
 > vez de construtor público para garantir que um `Animal` nunca nasça inválido.
+
+> 🪟 **Execução em janelas separadas** (para não esgotar o contexto e evitar alucinação nas tasks finais):
+> esta fase é dividida em **3 janelas**. Cada janela é uma sessão nova, executa só seu lote, fecha em
+> ponto seguro (build/testes verdes) e **commita**. A próxima janela começa "fresca" lendo o disco + git.
+>
+> | Janela | Tasks | Fecha com |
+> |--------|-------|-----------|
+> | **1A** | T1.1, T1.2, T1.3 (base classes, `AnimalId`, enums) | `dotnet build` 0 erros → commit |
+> | **1B** | T1.4, T1.5 (`Animal` aggregate, `IAnimalRepository`) | `dotnet build` 0 erros → commit |
+> | **1C** | T1.6, T1.7 (testes do Domain + docs) | `dotnet test` verde → commit → **push** (fim da fase) |
+>
+> Regra geral: fases longas devem ser quebradas assim — lotes de 2-3 tasks por janela, sempre
+> terminando em build/teste verde + commit.
 
 ### [ ] T1.1 — Base classes: `Entity<TId>`, `AggregateRoot<TId>`, `ValueObject`
 **Objetivo:** blocos base de DDD.
