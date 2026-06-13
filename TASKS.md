@@ -344,6 +344,13 @@ dotnet new gitignore        # gera .gitignore padrão .NET na raiz
 > Regra geral: fases longas devem ser quebradas assim — lotes de 2-3 tasks por janela, sempre
 > terminando em build/teste verde + commit.
 
+> 📌 **Estado atual (após realinhamento PT + VSA):** o código de T1.1, T1.2, T1.3 e T1.5 **já existe**
+> e compila (commit `423e488`). **Pendências da Fase 1:** (a) **T1.4** — o `Animal` está incompleto:
+> faltam `Caracteristicas`, `DistribuicaoGeografica`, `Tags` e `Curiosidades` (necessários para a
+> qualidade da busca); (b) **T1.6** — testes do Domain ainda não escritos (só `UnitTest1.cs` placeholder);
+> (c) **T1.7** — docs do domínio. O enum `Habitat` atual tem `Artico`/`Urbano` e não tem `Montanha`/`Polar`
+> — revisar contra o glossário.
+
 ### [ ] T1.1 — Base classes: `Entidade<TId>`, `RaizAgregada<TId>`, `ObjetoDeValor`
 **Objetivo:** blocos base de DDD.
 **Dep:** T0.4.
