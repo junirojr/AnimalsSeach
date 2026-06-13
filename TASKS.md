@@ -344,12 +344,12 @@ dotnet new gitignore        # gera .gitignore padrão .NET na raiz
 > Regra geral: fases longas devem ser quebradas assim — lotes de 2-3 tasks por janela, sempre
 > terminando em build/teste verde + commit.
 
-> 📌 **Estado atual (após realinhamento PT + VSA):** o código de T1.1, T1.2, T1.3 e T1.5 **já existe**
-> e compila (commit `423e488`). **Pendências da Fase 1:** (a) **T1.4** — o `Animal` está incompleto:
-> faltam `Caracteristicas`, `DistribuicaoGeografica`, `Tags` e `Curiosidades` (necessários para a
-> qualidade da busca); (b) **T1.6** — testes do Domain ainda não escritos (só `UnitTest1.cs` placeholder);
-> (c) **T1.7** — docs do domínio. O enum `Habitat` atual tem `Artico`/`Urbano` e não tem `Montanha`/`Polar`
-> — revisar contra o glossário.
+> 📌 **Estado atual:** a Fase 1 foi **resetada** (revertido o código adiantado) — voltamos ao estado limpo
+> pós-Fase 0. O Domain e a Application estão **vazios** (só os `.csproj`). A Fase 1 será refeita do zero,
+> em português sem acento e seguindo o `GLOSSÁRIO`, pelas janelas 1A/1B/1C. **Atenção:** o `Animal` (T1.4)
+> deve nascer **completo**, com todos os campos do "Modelo de Domínio" do PLAN.md (`NomeComum`,
+> `NomeCientifico`, `Descricao`, `Caracteristicas`, `Dieta`, `Habitat`, `DistribuicaoGeografica`,
+> `StatusConservacao`, `Tags`, `Curiosidades`).
 
 ### [ ] T1.1 — Base classes: `Entidade<TId>`, `RaizAgregada<TId>`, `ObjetoDeValor`
 **Objetivo:** blocos base de DDD.
