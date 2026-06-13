@@ -80,8 +80,13 @@
 > `Buscador.Domain`, `Buscador.Application`, `Buscador.Infrastructure`, `Buscador.Api` e os
 > projetos de teste — **não** mudam (são termos de arquitetura e já existem). As **pastas internas**
 > e todos os identificadores são em português: `Common`→`Comum`, `Animals`→`Animais`,
-> `Persistence`→`Persistencia`, `Search`→`Busca`, `Queries`→`Consultas`, `Commands`→`Comandos`,
+> `Persistence`→`Persistencia`, `Search`→`Busca`, `Features`→`Funcionalidades`, `Shared`→`Compartilhado`,
 > `Configurations`→`Configuracoes`, `Contracts`→`Contratos` (mantém `Endpoints`, `Fixtures`).
+>
+> **Arquitetura da Application = Vertical Slices.** Organize por caso de uso, não por tipo técnico:
+> `Application/Funcionalidades/<CasoDeUso>/` contém a `Consulta`/`Comando` + `Manipulador` + `Validador`
+> juntos (ex.: `Funcionalidades/BuscarAnimais/`). Itens cross-cutting (DTOs, interfaces de serviço,
+> `ValidationBehavior`) ficam em `Application/Compartilhado/`. **Não** crie pastas `Queries/`/`Commands/`.
 
 **Padrões / sufixos de arquitetura**
 

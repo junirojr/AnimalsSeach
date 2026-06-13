@@ -68,27 +68,32 @@ Buscador/
 │
 ├── backend/
 │   ├── CLAUDE.md                          # Stack, regra de deps, comandos dotnet
-│   ├── Buscador.sln
+│   ├── Buscador.slnx
 │   ├── src/
 │   │   ├── Buscador.Domain/
 │   │   │   ├── CLAUDE.md                  # Sem deps externas, só regras de negócio
-│   │   │   ├── Animals/
+│   │   │   ├── Animais/
 │   │   │   │   ├── Animal.cs
 │   │   │   │   ├── AnimalId.cs
-│   │   │   │   └── IAnimalRepository.cs
-│   │   │   └── Common/
-│   │   │       ├── AggregateRoot.cs
-│   │   │       ├── Entity.cs
-│   │   │       └── ValueObject.cs
-│   │   ├── Buscador.Application/
-│   │   │   ├── CLAUDE.md                  # CQRS com MediatR, só interfaces
-│   │   │   └── Animals/
-│   │   │       ├── Queries/
-│   │   │       └── Commands/
+│   │   │   │   ├── Dieta.cs / Habitat.cs / StatusConservacao.cs
+│   │   │   │   └── IRepositorioAnimal.cs
+│   │   │   └── Comum/
+│   │   │       ├── RaizAgregada.cs
+│   │   │       ├── Entidade.cs
+│   │   │       └── ObjetoDeValor.cs
+│   │   ├── Buscador.Application/          # VERTICAL SLICES: uma pasta por caso de uso
+│   │   │   ├── CLAUDE.md                  # CQRS com MediatR + Vertical Slice Architecture
+│   │   │   ├── Funcionalidades/
+│   │   │   │   ├── BuscarAnimais/         # Consulta + Manipulador + Validador + ModoBusca
+│   │   │   │   ├── ObterAnimalPorId/      # Consulta + Manipulador
+│   │   │   │   ├── ObterAnimais/          # Consulta + Manipulador + Validador
+│   │   │   │   ├── PopularAnimais/        # Comando + Manipulador + DadosSementeAnimal
+│   │   │   │   └── GerarEmbeddings/       # Comando + Manipulador
+│   │   │   └── Compartilhado/             # DTOs, interfaces de serviço, ValidationBehavior
 │   │   ├── Buscador.Infrastructure/
 │   │   │   ├── CLAUDE.md                  # EF Core, pgvector, Ollama
-│   │   │   ├── Persistence/
-│   │   │   ├── Search/
+│   │   │   ├── Persistencia/
+│   │   │   ├── Busca/
 │   │   │   └── Embeddings/
 │   │   └── Buscador.Api/
 │   │       ├── CLAUDE.md                  # Minimal API, contratos HTTP, sem lógica
