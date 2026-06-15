@@ -36,22 +36,23 @@ Usar **shadow properties** mapeadas via Fluent API em `AnimalConfiguration.cs`:
 
 ## Estado REAL após a Fase 2 (divergências a tratar na fase certa)
 
-> Verificado em 2026-06-15. A Fase 2 está verde (build + 13 testes, incl. integração). A implementação
-> divergiu da decisão acima em dois pontos. Tratar **na fase correspondente**, não agora — evita rework
-> de migration já aplicada e pushada.
+> Verificado em 2026-06-15. A implementação da Fase 2 divergiu da decisão acima em dois pontos.
+> **Ambos resolvidos:** dívida #1 (embedding) por decisão de arquitetura (acesso via SQL cru) e
+> dívida #2 (casing `VetorBusca`) na Fase 4. Histórico mantido abaixo.
 
-### ⚠️ DÍVIDA 1 — `embedding` NÃO está mapeado no modelo EF (resolver na Fase 5)
-- **Estado real:** a coluna `embedding vector(768)` foi criada por **SQL cru** na migration
-  `CriacaoInicial` (`migrationBuilder.Sql("ALTER TABLE animais ADD COLUMN embedding ...")`), **fora**
-  do modelo EF. O `ContextoBancoModelSnapshot` **não conhece** `embedding`. (Só `VetorBusca`/`search_vector`
-  está mapeado como shadow property.)
-- **Risco (armadilha):** ao mapear `embedding` como shadow property na Fase 5 e rodar
-  `dotnet ef migrations add`, o EF gera um `AddColumn("embedding")` que **falha** ao aplicar (coluna já existe).
-- **Correção na Fase 5 (preferida):** mapear `embedding` como shadow property em `AnimalConfiguracao`
-  (`builder.Property<Vector>("Embedding").HasColumnName("embedding").HasColumnType("vector(768)")`),
-  **regenerar** a migration `CriacaoInicial` (remover o `Sql(ALTER...)` do embedding e deixar o EF criar a
-  coluna) e recriar o banco local (DB é descartável). Alternativa: na migration nova, remover o `AddColumn`
-  redundante.
+### ✅ DÍVIDA 1 — acesso ao `embedding` (RESOLVIDA POR DECISÃO — Fase 5)
+- **Contexto:** a coluna `embedding vector(768)` foi criada por SQL cru na migration `CriacaoInicial`,
+  **fora** do modelo EF (o snapshot não a conhece). Mapeá-la como shadow property exigiria regenerar
+  migration já aplicada/pushada — rework arriscado.
+- **DECISÃO (2026-06-15):** o `embedding` **NÃO será mapeado no modelo EF**. Será acessado por **SQL cru**,
+  exatamente como o `search_vector`/FTS já faz (que é o padrão idiomático para operadores do pgvector,
+  ex.: `<=>` cosine). Assim:
+  - **Gravação** (T5.3 `GerarEmbeddingsComando`): `UPDATE animais SET embedding = {vetor}::vector WHERE id = {id}`
+    via `ContextoBanco.Database.ExecuteSqlRaw`.
+  - **Leitura/busca** (T5.4 `ServicoBuscaSemantica`): `... ORDER BY embedding <=> {vetorConsulta}::vector ...`,
+    espelhando o `ServicoBuscaTextual` (busca por SQL em 3 passos: scores por SQL → carrega entidades por id → combina).
+- **Efeito:** elimina a armadilha de `AddColumn` em coluna existente e dispensa rework de migration.
+  `embedding` permanece como coluna do banco, não como propriedade do agregado nem do modelo EF.
 
 ### ✅ DÍVIDA 2 — casing da shadow property `VetorBusca` (RESOLVIDA na Fase 4)
 - Era `Property<NpgsqlTsVector>("vetorbusca")`; padronizado para `"VetorBusca"` (commit `cbcb4c9`).
