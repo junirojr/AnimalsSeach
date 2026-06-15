@@ -1,0 +1,54 @@
+using Buscador.Application.Compartilhado;
+using Buscador.Infrastructure.Persistencia;
+using Microsoft.EntityFrameworkCore;
+
+namespace Buscador.Infrastructure.Busca;
+
+public class ServicoBuscaTextual : IServicoBuscaTextual
+{
+    private readonly ContextoBanco _contexto;
+
+    public ServicoBuscaTextual(ContextoBanco contexto)
+    {
+        _contexto = contexto;
+    }
+
+    public async Task<IReadOnlyList<ResultadoBuscaDto>> BuscarAsync(
+        string consulta,
+        int limite,
+        CancellationToken cancellationToken = default)
+    {
+        var consultaPreparada = consulta.Trim().Replace(" ", " & ");
+
+        // Passo 1: IDs e scores via SQL — evita tipo custom com enums
+        var scores = await _contexto.Database
+            .SqlQuery<IdComPontuacao>(
+                $"""
+                SELECT a.id AS "Id", ts_rank(a.search_vector, q) AS "Pontuacao"
+                FROM animais a,
+                     to_tsquery('portuguese', {consultaPreparada}) q
+                WHERE a.search_vector @@ q
+                ORDER BY ts_rank(a.search_vector, q) DESC
+                LIMIT {limite}
+                """)
+            .ToListAsync(cancellationToken);
+
+        if (scores.Count == 0)
+            return [];
+
+        // Passo 2: carregar entidades pelo ID — EF cuida da conversao de enums
+        var ids = scores.Select(s => s.Id).ToList();
+        var animais = await _contexto.Animais
+            .Where(a => ids.Contains(a.Id.Valor))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        // Passo 3: combinar mantendo a ordem do score
+        return scores
+            .Join(animais, s => s.Id, a => a.Id.Valor,
+                (s, a) => new ResultadoBuscaDto(a.ParaDto(), s.Pontuacao))
+            .ToList();
+    }
+
+    private record IdComPontuacao(Guid Id, double Pontuacao);
+}
