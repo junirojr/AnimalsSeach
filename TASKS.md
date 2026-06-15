@@ -71,6 +71,96 @@
 
 ---
 
+## MAPA DE JANELAS E PARALELISMO
+
+> Mesma estratégia da Fase 1 (janelas 1A/1B/1C), aplicada a todas as fases. Cada **janela** é uma
+> sessão nova, executa 2-3 tasks, fecha em **build/teste verde + commit**; **push no fim da fase**.
+
+### Janelas por fase
+
+**Fase 2 — Infrastructure/Banco** · dep: F1
+| Janela | Tasks | Fecha com |
+|--------|-------|-----------|
+| 2A | T2.1, T2.2, T2.3 | build 0 erros → commit |
+| 2B | T2.4, T2.5, T2.8 | build 0 erros → commit |
+| 2C | T2.6, T2.7, T2.9 | migration aplicada + teste de integração (Testcontainers) → commit → **push** |
+
+**Fase 3 — Application/CQRS** · dep: F1 · **roda em paralelo com a Fase 2**
+| Janela | Tasks | Fecha com |
+|--------|-------|-----------|
+| 3A | T3.1, T3.2, T3.3 | build → commit |
+| 3B | T3.4, T3.5, T3.6 | build → commit |
+| 3C | T3.7, T3.8 | testes unitários (Moq) verdes → commit → **push** |
+
+**Fase 4 — Full-Text Search** · dep: F2, F3 · **roda em paralelo com a Fase 5**
+| Janela | Tasks | Fecha com |
+|--------|-------|-----------|
+| 4A | T4.1, T4.2, T4.3 | build → commit |
+| 4B | T4.4, T4.5, T4.6 | teste de integração FTS verde → commit → **push** |
+
+**Fase 5 — Busca Semântica** · dep: F2, F3 · **roda em paralelo com a Fase 4**
+| Janela | Tasks | Fecha com |
+|--------|-------|-----------|
+| 5A | T5.1, T5.2 | build → commit |
+| 5B | T5.3, T5.4 | build → commit |
+| 5C | T5.5, T5.6, T5.7 | teste de integração semântica (Ollama) verde → commit → **push** |
+
+**Fase 6 — Busca Híbrida** · dep: F4 **e** F5
+| Janela | Tasks | Fecha com |
+|--------|-------|-----------|
+| 6A | T6.1, T6.2 | build → commit |
+| 6B | T6.3, T6.4 | teste comparativo dos 3 modos verde → commit → **push** |
+
+**Fase 7 — API** · dep: F6 · **frontend (F8) pode começar em paralelo após o contrato congelado**
+| Janela | Tasks | Fecha com |
+|--------|-------|-----------|
+| 7A | T7.1, T7.2, T7.3 | API sobe + Scalar lista endpoints → commit |
+| 7B | T7.4, T8.0 (CORS), T7.5, T7.6 | testes de integração da API verdes → commit → **push** |
+
+**Fase 8 — Frontend** · dep: contrato da API (rotas+JSON já no glossário)
+| Janela | Tasks | Fecha com |
+|--------|-------|-----------|
+| 8A | T8.1, T8.2 | build → commit |
+| 8B | T8.3, T8.4 (componentes — ver paralelismo abaixo) | build → commit |
+| 8C | T8.5, T8.6 | testes de componente (MSW) verdes → commit |
+| 8D | T8.7 | E2E Playwright verde → commit → **push** |
+
+### O que PODE rodar em paralelo (janelas/devs simultâneos)
+
+| Trilhas paralelas | Por quê é seguro | Pré-requisito |
+|-------------------|------------------|---------------|
+| **Fase 2 ∥ Fase 3** (maior ganho) | Projetos diferentes (Infrastructure vs Application); ambos só dependem do Domain (F1) | Interfaces de `Domain/IRepositorioAnimal` e `Application/Compartilhado/*` definidas (saem na F1 / início da 3A) |
+| **Fase 4 ∥ Fase 5** | Serviços independentes em `Infrastructure/Busca` (textual vs semântica), arquivos distintos | F2 e F3 prontas |
+| **Fase 7 ∥ Fase 8** | Backend (endpoints) e frontend (com MSW) em pastas/repos distintos | **Contrato da API congelado** (rotas + JSON do glossário) |
+| **Dentro da 8B** | `BarraBusca`/`AlternadorModoBusca` ∥ `CartaoAnimal`/`DetalheAnimal` | Tipos/serviços (8A) prontos |
+
+### Pontos de SERIALIZAÇÃO (NÃO paralelizar)
+
+- **Migrations (F2)** — um único dono. Duas janelas gerando migration corrompem o snapshot do EF.
+- **Switch de `ModoBusca`** no `BuscarAnimaisConsultaManipulador` — tocado em F4, F5 e F6. Evite editar em paralelo; combine na F6.
+- **Arquivos de DI** (`AdicionarInfraestrutura`, `AdicionarAplicacao`) — registro de serviços; edição paralela exige merge manual.
+- **Fase 6** só começa com **F4 e F5** concluídas.
+
+### Como rodar trilhas em paralelo com segurança
+
+- Cada trilha paralela em sua **branch** (`feat/fase-2-infra`, `feat/fase-3-application`), com merge na `main` ao fim — evita que janelas simultâneas pisem uma na outra no mesmo commit.
+- Sequência recomendada: **F1 → (F2 ∥ F3) → (F4 ∥ F5) → F6 → (F7 ∥ F8)**.
+- Sem branches (tudo direto na `main`): rode as trilhas **uma de cada vez** para não conflitar.
+
+### Diagrama de dependências
+
+```
+            ┌─> F2 (banco) ──┐
+F1 (domínio)┤                ├─> F4 (FTS) ─┐
+            └─> F3 (CQRS) ───┤             ├─> F6 (híbrida) ─> F7 (API) ──┬─> [pronto]
+                             └─> F5 (sem.) ┘                              └┄> F8 (frontend, ∥ após contrato)
+   (F2 ∥ F3)                       (F4 ∥ F5)                                  (F7 ∥ F8)
+
+Obs.: F4 e F5 dependem de F2 E F3 (ambas as setas convergem).
+```
+
+---
+
 ## GLOSSÁRIO DE NOMENCLATURA (EN → PT, sem acento)
 
 > **Autoritativo.** Use exatamente estes nomes em todas as fases. Em caso de dúvida sobre um nome
