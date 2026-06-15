@@ -1,4 +1,5 @@
 using Buscador.Application.Compartilhado;
+using Buscador.Domain.Animais;
 using Buscador.Infrastructure.Persistencia;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,9 +38,10 @@ public class ServicoBuscaTextual : IServicoBuscaTextual
             return [];
 
         // Passo 2: carregar entidades pelo ID — EF cuida da conversao de enums
-        var ids = scores.Select(s => s.Id).ToList();
+        // Converter para AnimalId para que o EF use o ValueConverter corretamente no IN
+        var animalIds = scores.Select(s => AnimalId.De(s.Id)).ToList();
         var animais = await _contexto.Animais
-            .Where(a => ids.Contains(a.Id.Valor))
+            .Where(a => animalIds.Contains(a.Id))
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
