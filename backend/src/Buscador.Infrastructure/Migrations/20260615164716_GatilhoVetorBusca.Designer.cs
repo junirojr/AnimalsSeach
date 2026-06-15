@@ -3,6 +3,7 @@ using System;
 using Buscador.Infrastructure.Persistencia;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -12,9 +13,11 @@ using NpgsqlTypes;
 namespace Buscador.Infrastructure.Migrations
 {
     [DbContext(typeof(ContextoBanco))]
-    partial class ContextoBancoModelSnapshot : ModelSnapshot
+    [Migration("20260615164716_GatilhoVetorBusca")]
+    partial class GatilhoVetorBusca
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
