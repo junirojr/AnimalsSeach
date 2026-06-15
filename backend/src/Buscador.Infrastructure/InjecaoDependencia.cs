@@ -26,6 +26,7 @@ public static class InjecaoDependencia
 		servicos.AddScoped<IRepositorioAnimal, RepositorioAnimal>();
 		servicos.AddScoped<IServicoBuscaTextual, ServicoBuscaTextual>();
 		servicos.AddScoped<IServicoEmbedding, ServicoEmbeddingOllama>();
+		servicos.AddScoped<IServicoBuscaSemantica, ServicoBuscaSemantica>();
 
 		return servicos;
 	}
