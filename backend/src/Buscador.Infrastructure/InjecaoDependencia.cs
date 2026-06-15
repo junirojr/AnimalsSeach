@@ -1,3 +1,4 @@
+using Buscador.Domain.Animais;
 using Buscador.Infrastructure.Persistencia;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,8 +20,7 @@ public static class InjecaoDependencia
 			opcoes.UseNpgsql(cadeiaConexao, npgsql => npgsql.UseVector());
 		});
 
-		// TODO: Descomentar após criar RepositorioAnimal em T2.7
-		// servicos.AddScoped<IRepositorioAnimal, RepositorioAnimal>();
+		servicos.AddScoped<IRepositorioAnimal, RepositorioAnimal>();
 
 		return servicos;
 	}
