@@ -434,14 +434,13 @@ dotnet new gitignore        # gera .gitignore padrão .NET na raiz
 > Regra geral: fases longas devem ser quebradas assim — lotes de 2-3 tasks por janela, sempre
 > terminando em build/teste verde + commit.
 
-> 📌 **Estado atual:** a Fase 1 foi **resetada** (revertido o código adiantado) — voltamos ao estado limpo
-> pós-Fase 0. O Domain e a Application estão **vazios** (só os `.csproj`). A Fase 1 será refeita do zero,
-> em português sem acento e seguindo o `GLOSSÁRIO`, pelas janelas 1A/1B/1C. **Atenção:** o `Animal` (T1.4)
-> deve nascer **completo**, com todos os campos do "Modelo de Domínio" do PLAN.md (`NomeComum`,
-> `NomeCientifico`, `Descricao`, `Caracteristicas`, `Dieta`, `Habitat`, `DistribuicaoGeografica`,
-> `StatusConservacao`, `Tags`, `Curiosidades`).
+> 📌 **Progresso (atualizado 2026-06-15):** Fases **0, 1, 2, 3 e 4 concluídas** (build verde, testes
+> passando, pushadas). O `Animal` nasceu completo (10 campos). A busca **textual (FTS)** funciona e há
+> endpoints mínimos + Scalar para teste manual (commit `627248a`, pré-Fase 7). **Próximo:** Fase 5
+> (semântica) — atenção à **dívida #2** do `embedding` (ver PROJECT_RISK_REGISTER). Dívida #3 (casing
+> `VetorBusca`) já **resolvida** na F4.
 
-### [ ] T1.1 — Base classes: `Entidade<TId>`, `RaizAgregada<TId>`, `ObjetoDeValor`
+### [x] T1.1 — Base classes: `Entidade<TId>`, `RaizAgregada<TId>`, `ObjetoDeValor`
 **Objetivo:** blocos base de DDD.
 **Dep:** T0.4.
 **Arquivos:** `src/Buscador.Domain/Comum/Entidade.cs`, `RaizAgregada.cs`, `ObjetoDeValor.cs`.
@@ -451,14 +450,14 @@ dotnet new gitignore        # gera .gitignore padrão .NET na raiz
 - `ObjetoDeValor`: classe abstrata com igualdade estrutural (método abstrato `ObterComponentesDeIgualdade()` retornando `IEnumerable<object>`).
 **DoD:** `dotnet build` 0 erros.
 
-### [ ] T1.2 — Value Object `AnimalId`
+### [x] T1.2 — Value Object `AnimalId`
 **Objetivo:** identificador tipado.
 **Dep:** T1.1.
 **Arquivo:** `src/Buscador.Domain/Animais/AnimalId.cs`.
 **Passos:** `record`/`ObjetoDeValor` que encapsula um `Guid Valor`. Método estático `Novo()` que gera novo Guid e `De(Guid)`.
 **DoD:** build 0 erros.
 
-### [ ] T1.3 — Enums do domínio
+### [x] T1.3 — Enums do domínio
 **Objetivo:** `Dieta`, `Habitat`, `StatusConservacao`.
 **Dep:** T0.4.
 **Arquivos:** `src/Buscador.Domain/Animais/Dieta.cs`, `Habitat.cs`, `StatusConservacao.cs`.
@@ -468,7 +467,7 @@ dotnet new gitignore        # gera .gitignore padrão .NET na raiz
 - `StatusConservacao`: escala IUCN — `PoucoPreocupante`, `QuaseAmeacado`, `Vulneravel`, `EmPerigo`, `CriticamenteEmPerigo`, `ExtintoNaNatureza`, `Extinto`.
 **DoD:** build 0 erros.
 
-### [ ] T1.4 — Aggregate `Animal`
+### [x] T1.4 — Aggregate `Animal`
 **Objetivo:** entidade central.
 **Dep:** T1.1, T1.2, T1.3.
 **Arquivo:** `src/Buscador.Domain/Animais/Animal.cs`.
@@ -480,14 +479,14 @@ são da Infrastructure e serão adicionados na Fase 2 — não referenciar Npgsq
 - Construtor privado + método de fábrica estático `Criar(...)` que valida: `NomeComum` e `NomeCientifico` não vazios; lança `ArgumentException` se inválido.
 **DoD:** build 0 erros; `Animal` não importa nenhum pacote externo.
 
-### [ ] T1.5 — Interface `IRepositorioAnimal`
+### [x] T1.5 — Interface `IRepositorioAnimal`
 **Objetivo:** contrato de persistência (só assinatura).
 **Dep:** T1.4.
 **Arquivo:** `src/Buscador.Domain/Animais/IRepositorioAnimal.cs`.
 **Passos:** métodos assíncronos: `Task<Animal?> ObterPorIdAsync(AnimalId id, CancellationToken)`, `Task AdicionarAsync(Animal, CancellationToken)`, `Task AdicionarVariosAsync(IEnumerable<Animal>, CancellationToken)`, `Task<IReadOnlyList<Animal>> ObterPaginadoAsync(int pagina, int tamanho, CancellationToken)`. (Métodos de busca serão adicionados nas fases 4-6.)
 **DoD:** build 0 erros.
 
-### [ ] T1.6 — Testes unitários do Domain
+### [x] T1.6 — Testes unitários do Domain
 **Objetivo:** validar regras do aggregate e VO.
 **Dep:** T1.4, T1.2.
 **Passos:**
@@ -500,7 +499,7 @@ são da Infrastructure e serão adicionados na Fase 2 — não referenciar Npgsq
    - `AnimalId_ComMesmoValor_SaoIguais`
 **DoD:** `dotnet test tests/Buscador.Domain.Tests` — todos verdes.
 
-### [ ] T1.7 — Preencher `PROJECT_DOMAIN_MAP.md`
+### [x] T1.7 — Preencher `PROJECT_DOMAIN_MAP.md`
 **Objetivo:** documentar linguagem ubíqua.
 **Dep:** T1.4.
 **Arquivo:** `docs/ai/PROJECT_DOMAIN_MAP.md` + `docs/reference/domain-model.md`.
@@ -520,7 +519,7 @@ nomes do `GLOSSÁRIO`.
 > embeddings. Mantemos o Domain limpo usando *shadow properties*: as colunas `search_vector` e
 > `embedding` existem no banco e no mapeamento, mas **não** na classe `Animal`.
 
-### [ ] T2.1 — Instalar pacotes NuGet de persistência
+### [x] T2.1 — Instalar pacotes NuGet de persistência
 **Objetivo:** EF Core + Npgsql + pgvector.
 **Dep:** T1.5.
 **Passos (em `src/Buscador.Infrastructure`):**
@@ -538,7 +537,7 @@ instalar, confira no `.csproj` que as versões do EF Core e do Npgsql começam c
 `Pgvector` e `Pgvector.EntityFrameworkCore` têm versionamento próprio (instale a última estável).
 **DoD:** build 0 erros; versões do EF Core e Npgsql no `.csproj` começam com `10.`.
 
-### [ ] T2.2 — Estender `Animal` com campos de busca
+### [x] T2.2 — Estender `Animal` com campos de busca
 **Objetivo:** adicionar `SearchVector` (tsvector) e `Embedding` (vector).
 **Dep:** T2.1.
 **Decisão de arquitetura:** como `Domain` não pode referenciar Npgsql/pgvector, esses campos
@@ -547,28 +546,28 @@ em `Animal` usando tipos primitivos. **Use shadow properties** (mapeadas em `Ani
 para manter o Domain limpo. Não adicione `NpgsqlTsVector`/`Vector` na classe `Animal`.
 **DoD:** decisão registrada em `docs/ai/PROJECT_RISK_REGISTER.md`; `Animal` continua sem deps externas.
 
-### [ ] T2.3 — `AppDbContext`
+### [x] T2.3 — `AppDbContext`
 **Objetivo:** contexto EF.
 **Dep:** T2.1.
 **Arquivo:** `src/Buscador.Infrastructure/Persistence/AppDbContext.cs`.
 **Passos:** `DbSet<Animal> Animals`. No `OnModelCreating`: `modelBuilder.HasPostgresExtension("vector")` e aplicar configurações via `ApplyConfigurationsFromAssembly`.
 **DoD:** build 0 erros.
 
-### [ ] T2.4 — `AnimalConfiguration` (Fluent API)
+### [x] T2.4 — `AnimalConfiguration` (Fluent API)
 **Objetivo:** mapear tabela `animals`, incluindo coluna `search_vector` (tsvector) e `embedding` (vector(768)).
 **Dep:** T2.3.
 **Arquivo:** `src/Buscador.Infrastructure/Persistence/Configurations/AnimalConfiguration.cs`.
 **Passos:** mapear todas as colunas; `embedding` como `vector(768)` nullable; `search_vector` como `tsvector` (shadow). Mapear `AnimalId` via conversão para `Guid`. Arrays (`Tags`) como `text[]`.
 **DoD:** build 0 erros.
 
-### [ ] T2.5 — Registro de DI da Infrastructure
+### [x] T2.5 — Registro de DI da Infrastructure
 **Objetivo:** método `AddInfrastructure(IServiceCollection, IConfiguration)`.
 **Dep:** T2.3.
 **Arquivo:** `src/Buscador.Infrastructure/DependencyInjection.cs`.
 **Passos:** registrar `AppDbContext` com `UseNpgsql(...).UseVector()` lendo connection string `"Postgres"`; registrar `IAnimalRepository` → `AnimalRepository` (criado em T2.7).
 **DoD:** build 0 erros (pode comentar o registro do repo até T2.7).
 
-### [ ] T2.6 — Migration inicial + índices
+### [x] T2.6 — Migration inicial + índices
 **Objetivo:** criar schema com índice GIN (FTS) e HNSW (vetor).
 **Dep:** T2.4, T2.5, e configuração da connection string na Api (T2.8 pode vir antes).
 **Passos:**
@@ -583,21 +582,21 @@ Editar a migration para adicionar (via `migrationBuilder.Sql`):
 Depois: `dotnet ef database update --project src/Buscador.Infrastructure --startup-project src/Buscador.Api`.
 **DoD:** `docker exec -it <postgres> psql -U buscador -d buscador -c "\d animals"` mostra a tabela com os índices.
 
-### [ ] T2.7 — `AnimalRepository`
+### [x] T2.7 — `AnimalRepository`
 **Objetivo:** implementar `IAnimalRepository`.
 **Dep:** T2.3, T1.5.
 **Arquivo:** `src/Buscador.Infrastructure/Persistence/AnimalRepository.cs`.
 **Passos:** implementar todos os métodos da interface usando `AppDbContext`. (Métodos de busca virão depois.)
 **DoD:** build 0 erros; descomentar registro de DI em T2.5.
 
-### [ ] T2.8 — Connection string + chamar `AddInfrastructure` na Api
+### [x] T2.8 — Connection string + chamar `AddInfrastructure` na Api
 **Objetivo:** Api conhece o banco.
 **Dep:** T2.5.
 **Arquivos:** `src/Buscador.Api/appsettings.json`, `src/Buscador.Api/Program.cs`.
 **Passos:** adicionar `ConnectionStrings:Postgres = "Host=localhost;Port=5432;Database=buscador;Username=buscador;Password=buscador"`; em `Program.cs` chamar `builder.Services.AddInfrastructure(builder.Configuration)`.
 **DoD:** `dotnet run --project src/Buscador.Api` sobe sem erro de conexão.
 
-### [ ] T2.9 — Teste de integração base (Testcontainers)
+### [x] T2.9 — Teste de integração base (Testcontainers)
 **Objetivo:** fixture que sobe Postgres real.
 **Dep:** T2.7.
 **Passos:**
@@ -618,7 +617,7 @@ Depois: `dotnet ef database update --project src/Buscador.Infrastructure --start
 > valida a entrada antes de chegar no handler. *DTO* é um objeto de transporte — devolvemos um
 > `AnimalDto` em vez do `Animal` do domínio para não vazar regras internas.
 
-### [ ] T3.1 — Instalar MediatR + FluentValidation
+### [x] T3.1 — Instalar MediatR + FluentValidation
 **Dep:** T1.5.
 **Passos (em `src/Buscador.Application`):**
 ```powershell
@@ -629,26 +628,26 @@ dotnet add package FluentValidation.DependencyInjectionExtensions
 Criar `src/Buscador.Application/DependencyInjection.cs` com `AddApplication()` que registra MediatR (assembly atual) e validators.
 **DoD:** build 0 erros.
 
-### [ ] T3.2 — DTO `AnimalDto` + mapeamento
+### [x] T3.2 — DTO `AnimalDto` + mapeamento
 **Objetivo:** contrato de saída da Application.
 **Dep:** T3.1.
 **Arquivo:** `src/Buscador.Application/Animals/AnimalDto.cs`.
 **Passos:** `record` com os campos públicos de `Animal` (sem campos de busca). Método/extensão `ToDto(this Animal)`.
 **DoD:** build 0 erros.
 
-### [ ] T3.3 — `GetAnimalByIdQuery` + Handler
+### [x] T3.3 — `GetAnimalByIdQuery` + Handler
 **Dep:** T3.2.
 **Arquivos:** `src/Buscador.Application/Animals/Queries/GetAnimalById/GetAnimalByIdQuery.cs` (+ `Handler`).
 **Passos:** query `record GetAnimalByIdQuery(Guid Id) : IRequest<AnimalDto?>`; handler usa `IAnimalRepository`.
 **DoD:** build 0 erros.
 
-### [ ] T3.4 — `GetAnimalsQuery` (paginada) + Handler + Validator
+### [x] T3.4 — `GetAnimalsQuery` (paginada) + Handler + Validator
 **Dep:** T3.2.
 **Arquivos:** pasta `Queries/GetAnimals/`.
 **Passos:** query `(int Page, int Size)`; validator: `Page >= 1`, `Size` entre 1 e 100.
 **DoD:** build 0 erros.
 
-### [ ] T3.5 — Dados-semente: 10 animais (MVP)
+### [x] T3.5 — Dados-semente: 10 animais (MVP)
 **Objetivo:** fonte de dados inicial para `SeedAnimalsCommand`. Começamos com **10** para validar
 o pipeline ponta-a-ponta rápido; expandimos para 50 em T9.0 depois que tudo funcionar.
 **Dep:** T1.4.
@@ -660,18 +659,18 @@ sapo, tubarão, urso-polar, elefante, papagaio). Texto descritivo bom o suficien
 embeddings (2-4 frases por campo de texto).
 **DoD:** build 0 erros; lista tem exatamente 10 itens, cada um com todos os campos preenchidos.
 
-### [ ] T3.6 — `SeedAnimalsCommand` + Handler
+### [x] T3.6 — `SeedAnimalsCommand` + Handler
 **Dep:** T3.5, T2.7.
 **Arquivos:** pasta `Commands/SeedAnimals/`.
 **Passos:** command `IRequest<int>` (retorna nº inserido); handler insere os 50 via `AddRangeAsync` se a tabela estiver vazia (idempotente).
 **DoD:** build 0 erros.
 
-### [ ] T3.7 — Chamar `AddApplication` na Api
+### [x] T3.7 — Chamar `AddApplication` na Api
 **Dep:** T3.1, T2.8.
 **Arquivo:** `src/Buscador.Api/Program.cs`.
 **DoD:** `dotnet run --project src/Buscador.Api` sobe sem erro.
 
-### [ ] T3.8 — Testes unitários da Application (Moq)
+### [x] T3.8 — Testes unitários da Application (Moq)
 **Dep:** T3.3, T3.4, T3.6.
 **Passos:**
 1. Em `tests/Buscador.Application.Tests`: `dotnet add package Moq` e `FluentAssertions`.
@@ -692,39 +691,39 @@ embeddings (2-4 frases por campo de texto).
 > atualizado automaticamente. `ts_rank` dá uma nota de relevância para ordenar os resultados.
 > Um índice GIN torna isso rápido. É busca por **palavra**, não por **significado** (isso é a Fase 5).
 
-### [ ] T4.1 — Trigger de `search_vector`
+### [x] T4.1 — Trigger de `search_vector`
 **Objetivo:** popular `search_vector` automaticamente no banco.
 **Dep:** T2.6.
 **Passos:** nova migration `AddSearchVectorTrigger` com `migrationBuilder.Sql` criando função + trigger PostgreSQL que concatena `common_name`, `scientific_name`, `description`, `characteristics`, `curiosities` em `search_vector` usando `to_tsvector('portuguese', ...)` no `INSERT`/`UPDATE`. Aplicar com `database update`.
 **DoD:** após seed, `SELECT common_name, search_vector FROM animals LIMIT 1;` mostra vetor não-nulo.
 
-### [ ] T4.2 — Resultado de busca: `SearchResultDto`
+### [x] T4.2 — Resultado de busca: `SearchResultDto`
 **Objetivo:** DTO com score.
 **Dep:** T3.2.
 **Arquivo:** `src/Buscador.Application/Animals/Search/SearchResultDto.cs`.
 **Passos:** `record` com `AnimalDto Animal` + `double Score`.
 **DoD:** build 0 erros.
 
-### [ ] T4.3 — Interface `IFullTextSearchService` + impl
+### [x] T4.3 — Interface `IFullTextSearchService` + impl
 **Objetivo:** busca FTS com `ts_rank`.
 **Dep:** T4.1, T4.2.
 **Arquivos:** interface em `Application/Animals/Search/IFullTextSearchService.cs`; impl em `Infrastructure/Search/FullTextSearchService.cs`.
 **Passos:** método `Task<IReadOnlyList<SearchResultDto>> SearchAsync(string query, int limit, CancellationToken)`. Usar SQL com `to_tsquery('portuguese', ...)` + `ts_rank` ordenando por score desc. Registrar no DI.
 **DoD:** build 0 erros.
 
-### [ ] T4.4 — `SearchAnimalsQuery` modo `fulltext`
+### [x] T4.4 — `SearchAnimalsQuery` modo `fulltext`
 **Objetivo:** query CQRS com enum de modo.
 **Dep:** T4.3.
 **Arquivos:** pasta `Queries/SearchAnimals/` + enum `SearchMode { FullText, Semantic, Hybrid }`.
 **Passos:** query `(string Q, SearchMode Mode, int Limit)`; validator: `Q` não vazio. Handler: por enquanto só trata `FullText` (chama `IFullTextSearchService`); demais modos lançam `NotSupportedException` temporária.
 **DoD:** build 0 erros.
 
-### [ ] T4.5 — Teste de integração FTS
+### [x] T4.5 — Teste de integração FTS
 **Dep:** T4.4, T2.9.
 **Passos:** teste que faz seed, busca por palavra presente numa descrição e verifica que o animal esperado aparece no topo. Ex.: `Search_FullText_WithKeyword_ReturnsRelevantAnimal`.
 **DoD:** `dotnet test tests/Buscador.Api.Tests` verde.
 
-### [ ] T4.6 — Doc `how-fts-works.md`
+### [x] T4.6 — Doc `how-fts-works.md`
 **Dep:** T4.4.
 **Arquivo:** `docs/explanation/how-fts-works.md`.
 **DoD:** preenchido (explica tsvector/tsquery/ts_rank).

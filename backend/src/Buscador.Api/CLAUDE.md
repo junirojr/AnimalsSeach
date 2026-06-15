@@ -11,12 +11,16 @@ Cada endpoint faz exatamente 3 coisas:
 3. Retornar `Results.Ok(...)` / `Results.NotFound()` / etc.
 
 ```
-GET  /api/animals/search?q=&mode=fulltext|semantic|hybrid&limit=
-GET  /api/animals/{id}
-GET  /api/animals?page=&size=
-POST /api/animals/seed
-POST /api/animals/embeddings/generate
+GET  /api/animais/buscar?q=&modo=textual|semantica|hibrida&limite=
+GET  /api/animais/{id}
+GET  /api/animais?pagina=&tamanho=
+POST /api/animais/popular
+POST /api/animais/embeddings/gerar
 ```
+
+> **Estado atual (pré-Fase 7):** `Program.cs` já expõe versões **mínimas** de `popular`, `buscar`,
+> listar e obter-por-id (via MediatR) para teste manual do FTS. A Fase 7 vai **formalizá-las**:
+> mover para `Endpoints/AnimalEndpoints.cs`, criar `Contracts/`, `GlobalExceptionHandler` e CORS.
 
 ## Estrutura de pastas
 ```

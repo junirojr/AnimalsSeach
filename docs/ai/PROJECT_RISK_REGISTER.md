@@ -53,13 +53,22 @@ Usar **shadow properties** mapeadas via Fluent API em `AnimalConfiguration.cs`:
   coluna) e recriar o banco local (DB é descartável). Alternativa: na migration nova, remover o `AddColumn`
   redundante.
 
-### ⚠️ DÍVIDA 2 — nome da shadow property `vetorbusca` minúsculo (resolver na Fase 4)
-- **Estado real:** em `AnimalConfiguracao` está `Property<NpgsqlTsVector>("vetorbusca")`.
-- **Esperado (glossário):** `"VetorBusca"` (PascalCase). A coluna `search_vector` já está correta.
-- **Correção na Fase 4:** ao implementar o FTS (que referencia a property por nome, ex.:
-  `EF.Property<NpgsqlTsVector>(a, "VetorBusca")`), padronizar para `"VetorBusca"`. Como `HasColumnName`
-  não muda, não há alteração de schema.
+### ✅ DÍVIDA 2 — casing da shadow property `VetorBusca` (RESOLVIDA na Fase 4)
+- Era `Property<NpgsqlTsVector>("vetorbusca")`; padronizado para `"VetorBusca"` (commit `cbcb4c9`).
 
-### ✅ Correção já aplicada (na verificação de 2026-06-15)
-- Classe de DI da Application renomeada de `DependencyInjection` → **`InjecaoDependencia`** (consistência
-  com a Infrastructure e o glossário PT). O método `AdicionarAplicacao()` permanece igual.
+### ✅ Correções já aplicadas
+- DI da Application renomeada de `DependencyInjection` → **`InjecaoDependencia`** (consistência com a
+  Infrastructure e o glossário PT). O método `AdicionarAplicacao()` permanece igual. (commit `64e8ce9`)
+- Shadow property `VetorBusca` padronizada (commit `cbcb4c9`).
+
+---
+
+## Fase 4 — Limitação conhecida do Full-Text Search (acentos)
+
+- **Comportamento atual:** a busca usa `to_tsquery('portuguese', ...)`, que é **sensível a acento**
+  (sem extensão `unaccent`). Ex.: `q=leão` acha o Leão; `q=leao` (sem acento) **não** acha.
+- **Também:** múltiplos termos viram `AND` (espaço → ` & `), e há *stemming* português (singular/plural,
+  formas verbais colapsam).
+- **Melhoria opcional (não planejada):** habilitar `CREATE EXTENSION unaccent` e usar
+  `to_tsvector('portuguese', unaccent(...))` no gatilho + `unaccent()` na query para tornar a busca
+  insensível a acento. Decidir se vale a pena (custo: nova migration + ajuste no `ServicoBuscaTextual`).
