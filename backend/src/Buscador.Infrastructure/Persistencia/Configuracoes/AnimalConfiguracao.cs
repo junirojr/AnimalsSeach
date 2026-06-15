@@ -71,9 +71,5 @@ public class AnimalConfiguracao : IEntityTypeConfiguration<Animal>
 		builder.Property<NpgsqlTsVector>("vetorbusca")
 			.HasColumnName("search_vector")
 			.HasColumnType("tsvector");
-
-		builder.Property<string>("embedding")
-			.HasColumnName("embedding")
-			.HasColumnType("vector(768)");
 	}
 }

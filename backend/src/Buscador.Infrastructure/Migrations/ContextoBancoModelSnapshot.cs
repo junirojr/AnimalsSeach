@@ -80,10 +80,6 @@ namespace Buscador.Infrastructure.Migrations
                         .HasColumnType("text[]")
                         .HasColumnName("tags");
 
-                    b.Property<string>("embedding")
-                        .HasColumnType("vector(768)")
-                        .HasColumnName("embedding");
-
                     b.Property<NpgsqlTsVector>("vetorbusca")
                         .HasColumnType("tsvector")
                         .HasColumnName("search_vector");

@@ -13,7 +13,7 @@ using NpgsqlTypes;
 namespace Buscador.Infrastructure.Migrations
 {
     [DbContext(typeof(ContextoBanco))]
-    [Migration("20260615141539_CriacaoInicial")]
+    [Migration("20260615142400_CriacaoInicial")]
     partial class CriacaoInicial
     {
         /// <inheritdoc />
@@ -82,10 +82,6 @@ namespace Buscador.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text[]")
                         .HasColumnName("tags");
-
-                    b.Property<string>("embedding")
-                        .HasColumnType("vector(768)")
-                        .HasColumnName("embedding");
 
                     b.Property<NpgsqlTsVector>("vetorbusca")
                         .HasColumnType("tsvector")

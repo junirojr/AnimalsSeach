@@ -30,13 +30,16 @@ namespace Buscador.Infrastructure.Migrations
                     status_conservacao = table.Column<string>(type: "text", nullable: false),
                     tags = table.Column<string[]>(type: "text[]", nullable: false),
                     curiosidades = table.Column<string>(type: "text", nullable: false),
-                    embedding = table.Column<string>(type: "vector(768)", nullable: true),
                     search_vector = table.Column<NpgsqlTsVector>(type: "tsvector", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_animais", x => x.id);
                 });
+
+            // Adicionar coluna embedding manualmente (pgvector)
+            migrationBuilder.Sql(
+                "ALTER TABLE animais ADD COLUMN embedding vector(768) NULL;");
 
             // Índice GIN para busca full-text em search_vector
             migrationBuilder.Sql(
