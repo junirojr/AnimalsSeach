@@ -68,7 +68,7 @@ public class AnimalConfiguracao : IEntityTypeConfiguration<Animal>
 			.HasColumnType("text");
 
 		// Shadow properties (não aparecem na classe Animal)
-		builder.Property<NpgsqlTsVector>("vetorbusca")
+		builder.Property<NpgsqlTsVector>("VetorBusca")
 			.HasColumnName("search_vector")
 			.HasColumnType("tsvector");
 	}
