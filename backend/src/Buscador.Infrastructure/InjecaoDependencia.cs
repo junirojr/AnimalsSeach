@@ -1,6 +1,7 @@
 using Buscador.Application.Compartilhado;
 using Buscador.Domain.Animais;
 using Buscador.Infrastructure.Busca;
+using Buscador.Infrastructure.Embeddings;
 using Buscador.Infrastructure.Persistencia;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -24,6 +25,7 @@ public static class InjecaoDependencia
 
 		servicos.AddScoped<IRepositorioAnimal, RepositorioAnimal>();
 		servicos.AddScoped<IServicoBuscaTextual, ServicoBuscaTextual>();
+		servicos.AddScoped<IServicoEmbedding, ServicoEmbeddingOllama>();
 
 		return servicos;
 	}
