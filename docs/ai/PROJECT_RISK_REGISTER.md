@@ -181,3 +181,31 @@ literal** ("oceanos", "asas") e **frase com enchimento** ("animais que voam"). O
 "predador dos oceanos" revela que bge-m3 "crava" a tag literal `predador` (texto idêntico em 3 animais →
 chunks idênticos → scores idênticos) e ignora "oceanos". **Decisão: manter bge-m3 e seguir para o Híbrido
 (F6/RRF)**, onde o FTS ancora a palavra literal e o semântico entra para o conceito.
+
+## Busca híbrida (F6/RRF) — comparativo medido e novo gargalo (commits `844d6bb`, `c94493b`)
+
+### Resultado (4 consultas × 3 modos)
+- ✅ "tem asas" → **Híbrido venceu**: FTS achou as 2 aves, RRF as levou a #1/#2 e jogou o intruso (Tubarão) pra baixo.
+- ✅ "voar" → Híbrido reforçou Águia #1 / Papagaio #2.
+- ❌ "predador dos oceanos" e "animais que voam" → **FTS voltou VAZIO**, então Híbrido = Semântica (sem resgate).
+
+### Diagnóstico — o gargalo migrou para a RECALL do FTS
+O RRF está correto; ele só não tem o que fundir quando o FTS não dispara. O FTS volta vazio por dois motivos:
+1. **AND**: `ServicoBuscaTextual` faz `Replace(" ", " & ")` → exige TODOS os termos no mesmo documento.
+2. **Campos não indexados**: o gatilho do `search_vector` cobre nome + descrição + características + curiosidades,
+   mas **não** `distribuicao_geografica` (onde está "oceanos") nem `tags`.
+
+### Soluções priorizadas (por custo/benefício)
+1. **[F6.1] Recall do FTS** (maior retorno): trocar AND→OR no `tsquery` (ts_rank já premia quem casa mais termos);
+   incluir `distribuicao_geografica` + `tags` no gatilho; `unaccent` (acento-insensível). Custo: 1 migration + ajuste no serviço.
+2. **[F6.1] Tags contextualizadas**: no `FragmentadorAnimal`, embedar `"{NomeComum}: {tag}"` em vez da tag pura →
+   elimina o empate de chunks idênticos ("predador") e melhora a precisão da semântica. Custo: 1 linha + regerar.
+3. **[F6.2] Geração em lote**: o handler cria um `OllamaEmbeddingGenerator` por fragmento e chama 1 a 1 →
+   reusar instância + `GenerateAsync` em lote corta o tempo (bge-m3 é lento). Custo: refactor pequeno.
+4. **[F6.2] Normalizar pontuação do RRF** (0–1) no DTO — problema de apresentação, resolver na borda.
+5. **Higiene (baixa urgência)**: mover handler de `GerarEmbeddings` p/ Application (via `IServicoPersistenciaEmbedding`);
+   remover o parâmetro `TipoTextoEmbedding` morto quando a escolha de modelo estabilizar.
+
+### Não fazer agora
+Trocar de modelo de novo (bge-m3 cobre o que falta via híbrido) e tunar pesos do RRF (sem evidência de que peso
+igual seja ruim) — otimização prematura.
