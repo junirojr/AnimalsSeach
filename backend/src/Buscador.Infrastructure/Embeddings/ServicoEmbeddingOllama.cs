@@ -14,10 +14,12 @@ public class ServicoEmbeddingOllama : IServicoEmbedding
         _baseUrl = configuracao["Ollama:BaseUrl"] ?? "http://localhost:11434";
     }
 
-    public async Task<float[]> GerarAsync(string texto, CancellationToken cancellationToken = default)
+    public async Task<float[]> GerarAsync(string texto, TipoTextoEmbedding tipo, CancellationToken cancellationToken = default)
     {
+        var prefixo = tipo == TipoTextoEmbedding.Consulta ? "search_query: " : "search_document: ";
+        var textoComPrefixo = prefixo + texto;
         var gerador = new OllamaEmbeddingGenerator(new Uri(_baseUrl), Modelo);
-        var resultado = await gerador.GenerateAsync([texto], cancellationToken: cancellationToken);
+        var resultado = await gerador.GenerateAsync([textoComPrefixo], cancellationToken: cancellationToken);
         return resultado[0].Vector.ToArray();
     }
 }

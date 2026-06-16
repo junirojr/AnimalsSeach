@@ -22,7 +22,7 @@ public class ServicoBuscaSemantica : IServicoBuscaSemantica
         int limite,
         CancellationToken cancellationToken = default)
     {
-        var vetorConsulta = await _servicoEmbedding.GerarAsync(consulta.Trim(), cancellationToken);
+        var vetorConsulta = await _servicoEmbedding.GerarAsync(consulta.Trim(), TipoTextoEmbedding.Consulta, cancellationToken);
         var vetorString = "[" + string.Join(",",
             vetorConsulta.Select(f => f.ToString("G", CultureInfo.InvariantCulture))) + "]";
 

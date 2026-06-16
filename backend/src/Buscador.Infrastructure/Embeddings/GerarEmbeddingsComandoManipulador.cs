@@ -53,7 +53,7 @@ public sealed class GerarEmbeddingsComandoManipulador
                     continue;
 
                 var texto = $"{animal.Descricao} {animal.Caracteristicas} {animal.Curiosidades}";
-                var vetor = await _servicoEmbedding.GerarAsync(texto, cancellationToken);
+                var vetor = await _servicoEmbedding.GerarAsync(texto, TipoTextoEmbedding.Documento, cancellationToken);
 
                 var vetorString = "[" + string.Join(",",
                     vetor.Select(f => f.ToString("G", CultureInfo.InvariantCulture))) + "]";
