@@ -18,9 +18,11 @@ public static partial class FragmentadorAnimal
         fragmentos.AddRange(DividirEmFrases(animal.Caracteristicas));
         fragmentos.AddRange(DividirEmFrases(animal.Curiosidades));
 
+        // Tag contextualizada com o nome: "Lobo: predador" != "Leao: predador",
+        // evitando chunks identicos (e scores empatados) entre animais que compartilham a mesma tag.
         foreach (var tag in animal.Tags)
             if (!string.IsNullOrWhiteSpace(tag))
-                fragmentos.Add(tag.Trim());
+                fragmentos.Add($"{animal.NomeComum}: {tag.Trim()}");
 
         return fragmentos
             .Where(f => !string.IsNullOrWhiteSpace(f))

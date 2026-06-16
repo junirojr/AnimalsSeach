@@ -15,7 +15,7 @@ public class FragmentadorAnimalTests
 
         fragmentos.Should().Contain(animal.NomeComum.Trim());
         foreach (var tag in animal.Tags)
-            fragmentos.Should().Contain(tag.Trim());
+            fragmentos.Should().Contain(f => f.Contains(tag.Trim()));
         fragmentos.Count.Should().BeGreaterThan(animal.Tags.Length);
     }
 }
