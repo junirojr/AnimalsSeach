@@ -18,7 +18,7 @@ Aqui ficam banco de dados, migrations, repositórios e serviços externos (Ollam
 
 ## Ollama / Embeddings
 - `OllamaEmbeddingService` via `Microsoft.Extensions.AI.Ollama`
-- Modelo: `nomic-embed-text` (768 dimensões)
+- Modelo: `bge-m3` (1024 dimensões, multilíngue)
 - Endpoint configurável via `appsettings.json`
 
 ## Estrutura de pastas
