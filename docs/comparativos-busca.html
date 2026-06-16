@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buscador — Comparativos de Busca</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --card2:#172033; --txt:#e2e8f0; --muted:#94a3b8;
+    --line:#334155; --accent:#38bdf8; --good:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.55}
+  .wrap{max-width:1000px;margin:0 auto;padding:32px 20px 80px}
+  h1{font-size:1.8rem;margin:0 0 4px}
+  h2{font-size:1.25rem;margin:36px 0 10px;border-bottom:2px solid var(--line);padding-bottom:6px}
+  h3{font-size:1.02rem;margin:20px 0 8px;color:var(--accent)}
+  .sub{color:var(--muted);margin:0 0 24px}
+  code{background:#0b1220;padding:1px 6px;border-radius:4px;font-size:.86em;color:#7dd3fc}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
+  table{border-collapse:collapse;width:100%;margin:8px 0;font-size:.9rem}
+  th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}
+  th{background:var(--card2);color:var(--muted);font-weight:600}
+  td.rank{color:var(--muted);width:34px;text-align:center}
+  .score{color:var(--muted);font-variant-numeric:tabular-nums}
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .mode{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .mode h4{margin:0 0 6px;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .badge{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;vertical-align:middle}
+  .b-good{background:rgba(34,197,94,.15);color:var(--good);border:1px solid var(--good)}
+  .b-warn{background:rgba(245,158,11,.15);color:var(--warn);border:1px solid var(--warn)}
+  .b-bad{background:rgba(239,68,68,.15);color:var(--bad);border:1px solid var(--bad)}
+  .hit{color:var(--good);font-weight:600}
+  .miss{color:var(--bad)}
+  .empty{color:var(--muted);font-style:italic}
+  .verdict{margin:6px 0 0;font-size:.9rem}
+  .tl{list-style:none;padding:0;margin:0}
+  .tl li{padding:8px 0 8px 18px;border-left:2px solid var(--line);position:relative;margin-left:4px}
+  .tl li::before{content:"";position:absolute;left:-6px;top:14px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+  .tl .date{color:var(--muted);font-size:.8rem}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 22px;color:var(--muted);font-size:.85rem;margin:4px 0 0}
+  .meta b{color:var(--txt)}
+  footer{margin-top:50px;color:var(--muted);font-size:.8rem;border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>🔎 Buscador — Comparativos de Busca</h1>
+  <p class="sub">Registro vivo dos testes de ranking. Cada mudança de <b>modelo</b>, <b>modo</b> ou
+  <b>estratégia de teste</b> vira uma nova seção datada abaixo. A mais recente fica no topo.</p>
+
+  <!-- ============================ CONFIG ATUAL ============================ -->
+  <h2>⚙️ Configuração atual</h2>
+  <div class="card">
+    <div class="meta">
+      <span><b>Modelo de embedding:</b> bge-m3 (1024 dim, multilíngue)</span>
+      <span><b>Indexação:</b> multi-vetor por fragmentos (frases + tags contextualizadas)</span>
+      <span><b>Similaridade:</b> cosine, max-sim (<code>MIN(distância)</code>)</span>
+    </div>
+    <div class="meta" style="margin-top:6px">
+      <span><b>FTS:</b> <code>to_tsquery</code> OR + <code>unaccent</code>; indexa nome, descrição, características, curiosidades, distribuição e tags</span>
+      <span><b>Híbrido:</b> Reciprocal Rank Fusion (k=60), peso igual</span>
+    </div>
+  </div>
+
+  <!-- ============================ LINHA DO TEMPO ============================ -->
+  <h2>🧭 Linha do tempo das mudanças</h2>
+  <div class="card">
+    <ul class="tl">
+      <li><span class="date">F5</span> — Busca semântica (nomic-embed-text, 768 dim, <b>vetor único</b>). Scores grudados em ~0,5.</li>
+      <li><span class="date">F5+</span> — Prefixos <code>search_query/search_document</code>. Melhora em conceito; atributo curto ainda fraco.</li>
+      <li><span class="date">F5+</span> — <b>Multi-vetor (chunks)</b>: 1 animal → N vetores (frases + tags), busca max-sim. "voar" passa a acertar.</li>
+      <li><span class="date">F5+</span> — Troca para <b>bge-m3 (1024 dim)</b>. PT melhor; regrediu multi-conceito ("predador dos oceanos").</li>
+      <li><span class="date">F6</span> — Busca <b>Híbrida (RRF)</b> fundindo FTS + semântica. Vence quando o FTS dispara.</li>
+      <li><span class="date">F6.1</span> — <b>Recall do FTS</b> (OR + unaccent + mais campos) e <b>tags contextualizadas</b>. Resgata "predador dos oceanos".</li>
+    </ul>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- ============== RUN: cole novos comparativos como este ================ -->
+  <!-- ====================================================================== -->
+  <h2>📊 2026-06-16 — F6.1 (recall do FTS + tags contextualizadas) <span class="badge b-good">ATUAL</span></h2>
+  <div class="card">
+    <div class="meta"><span><b>Setup:</b> bge-m3 1024 · multi-vetor · tags contextualizadas · FTS OR+unaccent · RRF k=60</span></div>
+    <p class="verdict">🎯 <b>Objetivo atingido:</b> o FTS voltou a disparar (indexar <code>distribuicao_geografica</code> + OR) e o
+    <b>híbrido resgatou "predador dos oceanos"</b> (Tubarão de #4 → #1). O empate de tags na semântica desapareceu.</p>
+
+    <h3>"tem asas" <span class="badge b-good">híbrido ok</span></h3>
+    <div class="grid">
+      <div class="mode"><h4>Textual</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Papagaio</td><td class="score">0.0608</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Águia</td><td class="score">0.0608</td></tr></table></div>
+      <div class="mode"><h4>Semântica</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Águia</td><td class="score">0.6058</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Papagaio</td><td class="score">0.5737</td></tr>
+        <tr><td class="rank">3</td><td>Urso-polar</td><td class="score">0.5592</td></tr>
+        <tr><td class="rank">4</td><td>Elefante</td><td class="score">0.5427</td></tr></table></div>
+      <div class="mode"><h4>Híbrida</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Papagaio</td><td class="score">0.0325</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Águia</td><td class="score">0.0325</td></tr>
+        <tr><td class="rank">3</td><td>Urso-polar</td><td class="score">0.0159</td></tr>
+        <tr><td class="rank">4</td><td>Elefante</td><td class="score">0.0156</td></tr></table></div>
+    </div>
+    <p class="verdict">As duas aves no topo. ✅</p>
+
+    <h3>"predador dos oceanos" <span class="badge b-good">resgatado</span></h3>
+    <div class="grid">
+      <div class="mode"><h4>Textual</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Tubarão</td><td class="score">0.0794</td></tr>
+        <tr><td class="rank">2</td><td>Lobo</td><td class="score">0.0380</td></tr>
+        <tr><td class="rank">3</td><td>Águia</td><td class="score">0.0380</td></tr>
+        <tr><td class="rank">4</td><td>Leão</td><td class="score">0.0304</td></tr></table></div>
+      <div class="mode"><h4>Semântica</h4>
+        <table><tr><td class="rank">1</td><td>Leão</td><td class="score">0.6493</td></tr>
+        <tr><td class="rank">2</td><td>Águia</td><td class="score">0.6389</td></tr>
+        <tr><td class="rank">3</td><td>Lobo</td><td class="score">0.6120</td></tr>
+        <tr><td class="rank">4</td><td class="miss">Tubarão</td><td class="score">0.5525</td></tr></table></div>
+      <div class="mode"><h4>Híbrida</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Tubarão</td><td class="score">0.0320</td></tr>
+        <tr><td class="rank">2</td><td>Leão</td><td class="score">0.0320</td></tr>
+        <tr><td class="rank">3</td><td>Lobo</td><td class="score">0.0320</td></tr>
+        <tr><td class="rank">4</td><td>Águia</td><td class="score">0.0320</td></tr></table></div>
+    </div>
+    <p class="verdict">FTS acha o Tubarão (casa "oceanos"); RRF o leva a #1 no híbrido. Margem fina (top-4 quase empatado ~0.0320) —
+    o RRF achata o forte sinal do FTS. Alavanca futura: <b>RRF com peso</b>.</p>
+
+    <h3>"animais que voam" <span class="badge b-warn">parcial</span></h3>
+    <div class="grid">
+      <div class="mode"><h4>Textual</h4><table><tr><td class="empty">(vazio)</td></tr></table>
+        <p class="verdict" style="font-size:.8rem">stemmer trata "voam" ≠ "voar"</p></div>
+      <div class="mode"><h4>Semântica</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Papagaio</td><td class="score">0.6496</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Águia</td><td class="score">0.5880</td></tr>
+        <tr><td class="rank">3</td><td>Lobo</td><td class="score">0.5791</td></tr>
+        <tr><td class="rank">4</td><td>Cobra</td><td class="score">0.5719</td></tr></table></div>
+      <div class="mode"><h4>Híbrida</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Papagaio</td><td class="score">0.0164</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Águia</td><td class="score">0.0161</td></tr>
+        <tr><td class="rank">3</td><td>Lobo</td><td class="score">0.0159</td></tr>
+        <tr><td class="rank">4</td><td>Cobra</td><td class="score">0.0156</td></tr></table></div>
+    </div>
+    <p class="verdict">As aves lideram, mas FTS vazio (gap de stemming "voam"/"voar") → híbrido = semântica.</p>
+
+    <h3>"voar" <span class="badge b-good">ok</span></h3>
+    <div class="grid">
+      <div class="mode"><h4>Textual</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Águia</td><td class="score">0.0608</td></tr></table></div>
+      <div class="mode"><h4>Semântica</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Águia</td><td class="score">0.5312</td></tr>
+        <tr><td class="rank">2</td><td>Lobo</td><td class="score">0.4646</td></tr>
+        <tr><td class="rank">3</td><td>Urso-polar</td><td class="score">0.4255</td></tr>
+        <tr><td class="rank">4</td><td>Papagaio</td><td class="score">0.3941</td></tr></table></div>
+      <div class="mode"><h4>Híbrida</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Águia</td><td class="score">0.0328</td></tr>
+        <tr><td class="rank">2</td><td>Lobo</td><td class="score">0.0161</td></tr>
+        <tr><td class="rank">3</td><td>Urso-polar</td><td class="score">0.0159</td></tr>
+        <tr><td class="rank">4</td><td>Papagaio</td><td class="score">0.0156</td></tr></table></div>
+    </div>
+    <p class="verdict">Águia #1 firme. ✅</p>
+  </div>
+
+  <!-- ============================ RUN ANTERIOR ============================ -->
+  <h2>📊 2026-06-16 — F6 (híbrido, antes do recall do FTS)</h2>
+  <div class="card">
+    <div class="meta"><span><b>Setup:</b> bge-m3 1024 · multi-vetor · tags <i>puras</i> · FTS <i>AND</i> · RRF k=60</span></div>
+    <p class="verdict">Híbrido venceu "tem asas", mas <span class="miss">FTS vazio em frases</span> ("predador dos oceanos",
+    "animais que voam") → híbrido = semântica, sem resgate.</p>
+
+    <h3>"predador dos oceanos" <span class="badge b-bad">falhou</span></h3>
+    <div class="grid">
+      <div class="mode"><h4>Textual</h4><table><tr><td class="empty">(vazio)</td></tr></table></div>
+      <div class="mode"><h4>Semântica</h4>
+        <table><tr><td class="rank">1</td><td class="miss">Lobo</td><td class="score">0.7981</td></tr>
+        <tr><td class="rank">2</td><td class="miss">Águia</td><td class="score">0.7981</td></tr>
+        <tr><td class="rank">3</td><td class="miss">Leão</td><td class="score">0.7981</td></tr>
+        <tr><td class="rank">4</td><td>Tubarão</td><td class="score">0.7182</td></tr></table>
+        <p class="verdict" style="font-size:.8rem">empate 0.798 = tags idênticas "predador"</p></div>
+      <div class="mode"><h4>Híbrida</h4>
+        <table><tr><td class="rank">1</td><td class="miss">Lobo</td><td class="score">0.0164</td></tr>
+        <tr><td class="rank">2</td><td class="miss">Águia</td><td class="score">0.0161</td></tr>
+        <tr><td class="rank">3</td><td class="miss">Leão</td><td class="score">0.0159</td></tr>
+        <tr><td class="rank">4</td><td>Tubarão</td><td class="score">0.0156</td></tr></table></div>
+    </div>
+  </div>
+
+  <!-- =================== HISTÓRICO: SEMÂNTICA POR MODELO =================== -->
+  <h2>📈 Histórico — semântica pura por modelo (multi-vetor)</h2>
+  <div class="card">
+    <table>
+      <tr><th>Query</th><th>nomic-embed-text (768)</th><th>bge-m3 (1024)</th></tr>
+      <tr><td>"voar"</td><td>Águia #1, 0.602 (gap 0.088)</td><td class="hit">Águia #1, 0.784 (gap 0.219)</td></tr>
+      <tr><td>"tem asas"</td><td class="miss">Cobra #1 (aves enterradas)</td><td>Águia #1 / Papagaio #3 (Tubarão intruso #2)</td></tr>
+      <tr><td>"animais que voam"</td><td>amontoado</td><td>amontoado (diluição da consulta)</td></tr>
+      <tr><td>"predador dos oceanos"</td><td class="hit">Tubarão #1, 0.638</td><td class="miss">Lobo/Águia/Leão empatam 0.798 &gt; Tubarão #4</td></tr>
+    </table>
+    <p class="verdict">bge-m3 ganhou em atributo PT ("voar", "tem asas") mas regrediu multi-conceito —
+    resolvido depois pelo híbrido + tags contextualizadas (F6.1).</p>
+  </div>
+
+  <!-- ============================ DESCOBERTAS ============================ -->
+  <h2>💡 Descobertas acumuladas</h2>
+  <div class="card">
+    <ul>
+      <li><b>Vetor único dilui atributo:</b> tag "voo" se perde na média de ~200 palavras → motivou o multi-vetor.</li>
+      <li><b>Multi-vetor (max-sim)</b> isola atributo <i>se houver tag/frase</i>; "asas" (sem tag) só funciona via FTS.</li>
+      <li><b>Tags idênticas empatam chunks</b> → contextualizar com o nome (<code>"Lobo: predador"</code>) quebra o empate.</li>
+      <li><b>bge-m3 &gt; nomic em PT</b> para atributo, mas pior em multi-conceito.</li>
+      <li><b>RRF usa posição, não magnitude</b> → achata sinal forte do FTS; pode pedir peso para casos como "predador dos oceanos".</li>
+      <li><b>Recall do FTS é o gargalo do híbrido:</b> AND + campos não indexados faziam o FTS voltar vazio. OR + unaccent + mais campos resolveram.</li>
+      <li><b>Stemming PT:</b> "voam" ≠ "voar" no dicionário <code>portuguese</code> → FTS perde flexões verbais.</li>
+    </ul>
+  </div>
+
+  <!--
+  ===================================================================================
+  TEMPLATE PARA NOVO COMPARATIVO (copiar o bloco <h2>..</h2><div class="card">..</div>
+  do topo, ajustar data/título e os números). Manter o mais recente logo após CONFIG.
+  Badges: <span class="badge b-good">ok</span> | b-warn | b-bad
+  Marcar acertos com class="hit", erros com class="miss", vazio com class="empty".
+  ===================================================================================
+  -->
+
+  <footer>
+    Buscador (Deep Sparrow) · registro de comparativos de busca · atualizado manualmente a cada teste.
+  </footer>
+
+</div>
+</body>
+</html>
