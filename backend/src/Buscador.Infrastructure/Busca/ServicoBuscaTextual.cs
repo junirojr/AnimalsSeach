@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Buscador.Application.Compartilhado;
 using Buscador.Domain.Animais;
 using Buscador.Infrastructure.Persistencia;
@@ -19,7 +20,17 @@ public class ServicoBuscaTextual : IServicoBuscaTextual
         int limite,
         CancellationToken cancellationToken = default)
     {
-        var consultaPreparada = consulta.Trim().Replace(" ", " & ");
+        // Sanitiza (remove pontuacao que quebraria o to_tsquery) e une os termos com OR (|),
+        // para maximizar a recall: o ts_rank ja premia quem casa mais termos e o hibrido/RRF
+        // reordena. unaccent (no SQL) torna a busca insensivel a acento.
+        var termos = Regex
+            .Replace(consulta, @"[^\p{L}\p{N}\s]", " ")
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        if (termos.Length == 0)
+            return [];
+
+        var consultaPreparada = string.Join(" | ", termos);
 
         // Passo 1: IDs e scores via SQL — evita tipo custom com enums
         var scores = await _contexto.Database
@@ -27,7 +38,7 @@ public class ServicoBuscaTextual : IServicoBuscaTextual
                 $"""
                 SELECT a.id AS "Id", ts_rank(a.search_vector, q) AS "Pontuacao"
                 FROM animais a,
-                     to_tsquery('portuguese', {consultaPreparada}) q
+                     to_tsquery('portuguese', unaccent({consultaPreparada})) q
                 WHERE a.search_vector @@ q
                 ORDER BY ts_rank(a.search_vector, q) DESC
                 LIMIT {limite}
@@ -37,8 +48,7 @@ public class ServicoBuscaTextual : IServicoBuscaTextual
         if (scores.Count == 0)
             return [];
 
-        // Passo 2: carregar entidades pelo ID — EF cuida da conversao de enums
-        // Converter para AnimalId para que o EF use o ValueConverter corretamente no IN
+        // Passo 2: carregar entidades pelo ID
         var animalIds = scores.Select(s => AnimalId.De(s.Id)).ToList();
         var animais = await _contexto.Animais
             .Where(a => animalIds.Contains(a.Id))
