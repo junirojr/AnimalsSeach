@@ -31,6 +31,7 @@ public static class InjecaoDependencia
 		servicos.AddScoped<IServicoBuscaTextual, ServicoBuscaTextual>();
 		servicos.AddScoped<IServicoEmbedding, ServicoEmbeddingOllama>();
 		servicos.AddScoped<IServicoBuscaSemantica, ServicoBuscaSemantica>();
+		servicos.AddScoped<IServicoBuscaHibrida, ServicoBuscaHibrida>();
 
 		return servicos;
 	}

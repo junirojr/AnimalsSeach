@@ -8,13 +8,16 @@ public sealed class BuscarAnimaisConsultaManipulador
 {
     private readonly IServicoBuscaTextual _servicoBuscaTextual;
     private readonly IServicoBuscaSemantica _servicoBuscaSemantica;
+    private readonly IServicoBuscaHibrida _servicoBuscaHibrida;
 
     public BuscarAnimaisConsultaManipulador(
         IServicoBuscaTextual servicoBuscaTextual,
-        IServicoBuscaSemantica servicoBuscaSemantica)
+        IServicoBuscaSemantica servicoBuscaSemantica,
+        IServicoBuscaHibrida servicoBuscaHibrida)
     {
         _servicoBuscaTextual = servicoBuscaTextual;
         _servicoBuscaSemantica = servicoBuscaSemantica;
+        _servicoBuscaHibrida = servicoBuscaHibrida;
     }
 
     public async Task<IReadOnlyList<ResultadoBuscaDto>> Handle(
@@ -30,7 +33,7 @@ public sealed class BuscarAnimaisConsultaManipulador
                 await _servicoBuscaSemantica.BuscarAsync(request.Q, request.Limite, cancellationToken),
 
             ModoBusca.Hibrida =>
-                throw new NotSupportedException("Busca hibrida sera implementada na Fase 6."),
+                await _servicoBuscaHibrida.BuscarAsync(request.Q, request.Limite, cancellationToken),
 
             _ => throw new NotSupportedException($"Modo de busca nao suportado: {request.Modo}")
         };
