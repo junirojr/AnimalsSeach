@@ -3,6 +3,7 @@ using Buscador.Domain.Animais;
 using Buscador.Infrastructure.Busca;
 using Buscador.Infrastructure.Embeddings;
 using Buscador.Infrastructure.Persistencia;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,9 @@ public static class InjecaoDependencia
 		{
 			opcoes.UseNpgsql(cadeiaConexao, npgsql => npgsql.UseVector());
 		});
+
+		servicos.AddMediatR(cfg =>
+			cfg.RegisterServicesFromAssembly(typeof(InjecaoDependencia).Assembly));
 
 		servicos.AddScoped<IRepositorioAnimal, RepositorioAnimal>();
 		servicos.AddScoped<IServicoBuscaTextual, ServicoBuscaTextual>();
