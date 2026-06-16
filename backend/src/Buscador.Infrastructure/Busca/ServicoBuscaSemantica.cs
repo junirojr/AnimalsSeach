@@ -26,14 +26,16 @@ public class ServicoBuscaSemantica : IServicoBuscaSemantica
         var vetorString = "[" + string.Join(",",
             vetorConsulta.Select(f => f.ToString("G", CultureInfo.InvariantCulture))) + "]";
 
-        // Passo 1: IDs e distancias cosine via SQL
+        // Passo 1: max-sim — menor distancia entre os fragmentos de cada animal
         var scores = await _contexto.Database
             .SqlQuery<IdComPontuacao>(
                 $"""
-                SELECT a.id AS "Id", (embedding <=> {vetorString}::vector) AS "Pontuacao"
-                FROM animais a
-                WHERE a.embedding IS NOT NULL
-                ORDER BY embedding <=> {vetorString}::vector ASC
+                SELECT a.id AS "Id", MIN(f.embedding <=> {vetorString}::vector) AS "Pontuacao"
+                FROM fragmentos_animal f
+                JOIN animais a ON a.id = f.animal_id
+                WHERE f.embedding IS NOT NULL
+                GROUP BY a.id
+                ORDER BY MIN(f.embedding <=> {vetorString}::vector) ASC
                 LIMIT {limite}
                 """)
             .ToListAsync(cancellationToken);

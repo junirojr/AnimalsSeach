@@ -30,19 +30,23 @@ public sealed class GerarEmbeddingsComandoManipulador
         GerarEmbeddingsComando request,
         CancellationToken cancellationToken)
     {
-        var idsSemEmbedding = await _contexto.Database
-            .SqlQuery<IdSemEmbedding>(
+        // Idempotente: so processa animais que ainda nao possuem fragmentos.
+        var idsSemFragmentos = await _contexto.Database
+            .SqlQuery<IdSemFragmentos>(
                 $"""
-                SELECT a.id AS "Id" FROM animais a WHERE a.embedding IS NULL
+                SELECT a.id AS "Id" FROM animais a
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM fragmentos_animal f WHERE f.animal_id = a.id
+                )
                 """)
             .Select(x => x.Id)
             .ToListAsync(cancellationToken);
 
         var total = 0;
 
-        for (var i = 0; i < idsSemEmbedding.Count; i += TamanhoLote)
+        for (var i = 0; i < idsSemFragmentos.Count; i += TamanhoLote)
         {
-            var lote = idsSemEmbedding.Skip(i).Take(TamanhoLote).ToList();
+            var lote = idsSemFragmentos.Skip(i).Take(TamanhoLote).ToList();
 
             foreach (var id in lote)
             {
@@ -52,15 +56,18 @@ public sealed class GerarEmbeddingsComandoManipulador
                 if (animal is null)
                     continue;
 
-                var texto = $"{animal.NomeComum} {animal.Descricao} {animal.Caracteristicas} {animal.Curiosidades} {string.Join(" ", animal.Tags)}";
-                var vetor = await _servicoEmbedding.GerarAsync(texto, TipoTextoEmbedding.Documento, cancellationToken);
+                foreach (var fragmento in FragmentadorAnimal.Fragmentar(animal))
+                {
+                    var vetor = await _servicoEmbedding.GerarAsync(
+                        fragmento, TipoTextoEmbedding.Documento, cancellationToken);
 
-                var vetorString = "[" + string.Join(",",
-                    vetor.Select(f => f.ToString("G", CultureInfo.InvariantCulture))) + "]";
+                    var vetorString = "[" + string.Join(",",
+                        vetor.Select(f => f.ToString("G", CultureInfo.InvariantCulture))) + "]";
 
-                await _contexto.Database.ExecuteSqlRawAsync(
-                    "UPDATE animais SET embedding = {0}::vector WHERE id = {1}",
-                    vetorString, id);
+                    await _contexto.Database.ExecuteSqlRawAsync(
+                        "INSERT INTO fragmentos_animal (id, animal_id, texto, embedding) VALUES ({0}, {1}, {2}, {3}::vector)",
+                        Guid.NewGuid(), id, fragmento, vetorString);
+                }
 
                 total++;
             }
@@ -69,5 +76,5 @@ public sealed class GerarEmbeddingsComandoManipulador
         return total;
     }
 
-    private record IdSemEmbedding(Guid Id);
+    private record IdSemFragmentos(Guid Id);
 }
