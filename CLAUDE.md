@@ -7,7 +7,7 @@ Projeto de aprendizado: C# / .NET 10, Clean Architecture, DDD, pgvector, Ollama.
 ## Stack
 - **Backend**: .NET 10, ASP.NET Core Minimal API, EF Core 10, PostgreSQL 16 + pgvector
 - **Busca FTS**: `tsvector` / `tsquery` nativo do Postgres
-- **Busca Semântica**: pgvector + Ollama (`nomic-embed-text`, 768 dim)
+- **Busca Semântica**: pgvector + Ollama (`bge-m3`, 1024 dim, multilíngue) — multi-vetor por fragmentos (chunks) com max-sim
 - **CQRS**: MediatR 12 | **Validação**: FluentValidation | **Docs API**: Scalar
 - **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind CSS, TanStack Query
 - **Infra local**: Docker Desktop (PostgreSQL + Ollama em containers)
@@ -25,7 +25,7 @@ Buscador/
 ```bash
 # Infra
 docker compose up -d
-docker exec ollama ollama pull nomic-embed-text
+docker exec ollama ollama pull bge-m3
 
 # Backend (rodar em backend/)
 dotnet build

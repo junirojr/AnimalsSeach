@@ -7,7 +7,7 @@ Aqui ficam banco de dados, migrations, repositórios e serviços externos (Ollam
 ## EF Core + PostgreSQL
 - `AppDbContext` com `DbSet<Animal> Animals`
 - `AnimalConfiguration` (Fluent API): mapeia tabela `animals`, shadow properties
-- **Shadow properties**: `search_vector` (tsvector) e `embedding` (vector(768))
+- **Shadow properties**: `search_vector` (tsvector) e `embedding` (vector(1024), bge-m3)
   ficam AQUI — o Domain não sabe da existência delas
 - Migrations geradas com `dotnet ef migrations add` (ver backend/CLAUDE.md)
 

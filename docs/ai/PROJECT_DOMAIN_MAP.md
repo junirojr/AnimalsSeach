@@ -100,7 +100,7 @@ fica na Infrastructure e nunca vaza para o Domain.
 | `Tags` | `string[]` | Palavras-chave para busca e categorização |
 | `Curiosidades` | `string` | Fatos curiosos sobre o animal |
 
-> **Campos de busca ausentes do Domain:** `VetorBusca` (tsvector) e `Embedding` (vector 768d)
+> **Campos de busca ausentes do Domain:** `VetorBusca` (tsvector) e `Embedding` (vector 1024d, bge-m3)
 > são shadow properties mapeadas na Infrastructure (Fase 2). O Domain permanece limpo.
 
 ---

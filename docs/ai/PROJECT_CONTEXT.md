@@ -16,7 +16,7 @@ como projeto de aprendizado progressivo em C# / .NET 10 com Clean Architecture e
 | API | ASP.NET Core Minimal API | Leve, moderno, ideal para aprender |
 | ORM | EF Core 10 | Padrão do ecossistema .NET |
 | Banco | PostgreSQL 16 + pgvector | FTS nativo + vetores sem infra extra |
-| Embeddings | Ollama + nomic-embed-text | Local, gratuito, 768 dimensões |
+| Embeddings | Ollama + bge-m3 | Local, gratuito, 1024 dimensões, multilíngue |
 | CQRS | MediatR 12 | Desacoplamento, testabilidade |
 | Frontend | Next.js 15 App Router | Stack conhecida pelo dev |
 | Infra | Docker Desktop | Sem instalação de serviços no SO |

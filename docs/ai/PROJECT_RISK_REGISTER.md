@@ -87,6 +87,36 @@ Usar **shadow properties** mapeadas via Fluent API em `AnimalConfiguration.cs`:
   trocar a asserção frágil por uma **determinística**: `BeInDescendingOrder(r => r.Pontuacao)`. A
   verificação de "o Lobo aparece pra 'caça em bando'" fica para teste **manual/exploratório**, não gate.
 
+### ✅ Prefixos de tarefa do `nomic-embed-text` (RESOLVIDO — commit `bde70c2`)
+- **Sintoma:** no modo Semantica, as similaridades de todos os animais "grudavam" perto de ~0,50, com
+  diferenças quase imperceptíveis entre o #1 e o #10 — o ranking parecia aleatório.
+- **Causa:** o `nomic-embed-text` **exige prefixos de tarefa**. Sem eles os vetores ficam pouco
+  separados. O `ServicoEmbeddingOllama` enviava o texto cru, sem prefixo.
+- **Correção:** `IServicoEmbedding.GerarAsync` passou a receber `TipoTextoEmbedding { Documento, Consulta }`;
+  o serviço prefixa `search_document: ` nos textos dos animais (gerados em `GerarEmbeddingsComandoManipulador`)
+  e `search_query: ` na consulta (`ServicoBuscaSemantica`).
+- **Efeito medido:** para queries conceituais e ricas o ranking melhorou claramente
+  (ex.: "predador dos oceanos" → Tubarão-branco em #1 com score 0,638 e gap de ~0,058 para o #2).
+
+### ⚠️ Limitação do `nomic-embed-text` em PT — queries curtas / atributo booleano (CONHECIDA)
+- **Mesmo com os prefixos**, queries **curtas** ("voar") ou de **atributo binário** ("é venenoso",
+  "vive na água") não geram separação suficiente: o modelo captura similaridade de *gênero textual*
+  (descrição de animal) em vez do *atributo*. Ex.: "voar" coloca Águia só em #3; "Animais que voam"
+  traz Sapo e Tubarão no top-3.
+- **Causa raiz:** `nomic-embed-text` é primariamente inglês; queries curtas em português produzem vetores
+  fracos.
+- **Onde a busca semântica FUNCIONA bem:** queries longas com vocabulário de domínio e similaridade
+  temática/conceitual ("símbolo de liberdade", "predador de topo marinho").
+- **Onde FALHA:** atributos binários, queries de uma palavra, qualquer caso onde o FTS literal seria
+  mais preciso.
+- **Mitigações (ordem de custo/benefício):**
+  1. **Incluir `NomeComum` + `Tags` no texto embedado** (hoje só `Descricao + Caracteristicas + Curiosidades`).
+     A tag `voo` da Águia isolaria seu vetor do Sapo. Barato; exige regerar embeddings.
+  2. **Modo `Hibrida` (F6 / RRF):** o FTS ancora a palavra literal e o semântico desempata — melhor
+     resposta para queries curtas.
+  3. **Modelo multilíngue** (ex.: `multilingual-e5-large`): maior impacto no PT, maior custo/risco; só
+     se 1+2 não bastarem.
+
 ### ⚠️ `GerarEmbeddingsComandoManipulador` está na Infrastructure (decisão pendente)
 - **Estado real:** o comando `GerarEmbeddingsComando` está na Application, mas seu **handler** está em
   `Infrastructure/Embeddings/` (porque usa `ContextoBanco`/SQL cru). A Infrastructure passou a registrar
@@ -98,3 +128,56 @@ Usar **shadow properties** mapeadas via Fluent API em `AnimalConfiguration.cs`:
   (ex.: `IServicoPersistenciaEmbedding` com `AtualizarEmbeddingAsync` + `ObterIdsSemEmbeddingAsync`)
   implementada na Infrastructure. Aí a Application volta a conter o handler e a Infra não precisa registrar MediatR.
 - **Decisão:** pendente do usuário (aceitar pragmático vs refatorar).
+
+---
+
+## Multi-vetor por fragmentos (chunks) — busca semântica (IMPLEMENTADO — commits `a7305d8`, `e8bd461`, `ab3ae52`)
+
+### Contexto
+Mesmo com prefixos + tags no texto, atributos curtos ("voar") rankeavam mal. Causa: cada animal era
+**um único vetor** (mean pooling de ~200 palavras) → o sinal de um atributo (ex.: a tag `voo`) diluía na média.
+
+### Decisão
+Indexar cada animal como **vários vetores** (chunks), não um só:
+- Nova tabela `fragmentos_animal(id, animal_id, texto, embedding)` criada por migration com **SQL cru**
+  (não mapeada no modelo EF — mesma decisão do `embedding`), FK `ON DELETE CASCADE` + índice HNSW.
+- **Chunking** em `FragmentadorAnimal` (na **Application**, função pura → testável): `NomeComum` + cada
+  **frase** dos campos longos (split em `[.!?]`) + **cada tag isolada** (a tag `voo` vira um vetor próprio).
+- **Geração** (`GerarEmbeddingsComandoManipulador`): 1 embedding por fragmento; idempotente por
+  "animal sem fragmentos". **Para regerar no dev: `DELETE FROM fragmentos_animal;` antes do POST.**
+- **Busca** (`ServicoBuscaSemantica`): **max-sim** — `MIN(distância)` entre os fragmentos de cada animal
+  (`GROUP BY a.id`), o animal pontua pelo seu *melhor* fragmento, não pela média.
+
+### Efeito medido
+- ✅ "voar" → Águia #1 com gap nítido (atributo com tag isolada funciona).
+- ❌ "tem asas" ainda errava (atributo **sem tag** fica enterrado numa frase → diluído).
+
+## Troca de modelo: nomic-embed-text → `bge-m3` (IMPLEMENTADO — commit `2837ec0`)
+
+### Contexto
+O `nomic-embed-text` é primariamente inglês; atributos em PT separavam mal. Tentativa final na semântica pura:
+trocar por modelo multilíngue.
+
+### Decisão
+- Modelo passa a ser **`bge-m3`** (multilíngue). **NÃO usa** prefixos `search_query:`/`search_document:`
+  (query e documento simétricos) — a lógica de prefixo saiu do `ServicoEmbeddingOllama` (o parâmetro
+  `TipoTextoEmbedding` foi mantido na interface só para permitir voltar ao nomic com baixo atrito).
+- **bge-m3 = 1024 dimensões** (nomic era 768) → migration `EmbeddingBgeM3Vetor1024` altera as colunas
+  `embedding` de `vector(768)` → `vector(1024)` nas tabelas `animais` e `fragmentos_animal` (limpa vetores
+  antigos + recria HNSW). Reversível via `Down` (volta a 768).
+- Custo: bge-m3 é maior/mais lento na geração (regerar 150 fragmentos ~140s vs ~50s do nomic).
+
+### Efeito medido (modo Semantica, multi-vetor)
+| Query | nomic (768) | bge-m3 (1024) |
+|-------|-------------|---------------|
+| "voar" | Águia #1, 0.602 (gap 0.088) | Águia #1, **0.784 (gap 0.219)** — muito melhor |
+| "tem asas" | Cobra #1 ❌ | Águia #1 / Papagaio #3 — melhor (Tubarão intruso #2) |
+| "animais que voam" | amontoado | amontoado (diluição da **consulta**, não do documento) |
+| "predador dos oceanos" | Tubarão #1, 0.638 ✅ | Lobo/Águia/Leão empatam 0.798 > Tubarão #4 ❌ — **regrediu** |
+
+### Conclusão
+A busca **puramente semântica** atingiu o teto: ótima para conceito/atributo-com-tag, fraca em **palavra
+literal** ("oceanos", "asas") e **frase com enchimento** ("animais que voam"). O empate 0.798 em
+"predador dos oceanos" revela que bge-m3 "crava" a tag literal `predador` (texto idêntico em 3 animais →
+chunks idênticos → scores idênticos) e ignora "oceanos". **Decisão: manter bge-m3 e seguir para o Híbrido
+(F6/RRF)**, onde o FTS ancora a palavra literal e o semântico entra para o conceito.
