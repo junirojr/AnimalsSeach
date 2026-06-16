@@ -52,7 +52,7 @@ public sealed class GerarEmbeddingsComandoManipulador
                 if (animal is null)
                     continue;
 
-                var texto = $"{animal.Descricao} {animal.Caracteristicas} {animal.Curiosidades}";
+                var texto = $"{animal.NomeComum} {animal.Descricao} {animal.Caracteristicas} {animal.Curiosidades} {string.Join(" ", animal.Tags)}";
                 var vetor = await _servicoEmbedding.GerarAsync(texto, TipoTextoEmbedding.Documento, cancellationToken);
 
                 var vetorString = "[" + string.Join(",",
