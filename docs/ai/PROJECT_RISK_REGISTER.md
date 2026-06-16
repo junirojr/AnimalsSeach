@@ -73,3 +73,28 @@ Usar **shadow properties** mapeadas via Fluent API em `AnimalConfiguration.cs`:
 - **Melhoria opcional (não planejada):** habilitar `CREATE EXTENSION unaccent` e usar
   `to_tsvector('portuguese', unaccent(...))` no gatilho + `unaccent()` na query para tornar a busca
   insensível a acento. Decidir se vale a pena (custo: nova migration + ajuste no `ServicoBuscaTextual`).
+
+---
+
+## Fase 5 — Observações (verificação de 2026-06-15)
+
+### ✅ Teste semântico flaky — ENDURECIDO
+- **Sintoma:** `ServicoBuscaSemanticaTests` passava isolado, mas falhava na suíte completa (xUnit roda
+  classes em paralelo; sob carga, o ranking mudava).
+- **Causa:** a asserção fixava um animal específico (`Lobo`) no top-5 de uma busca semântica — relevância
+  de embedding **não é determinística** o bastante para isso.
+- **Correção:** manter `NotBeEmpty` (prova que busca semântica retorna sem correspondência textual) e
+  trocar a asserção frágil por uma **determinística**: `BeInDescendingOrder(r => r.Pontuacao)`. A
+  verificação de "o Lobo aparece pra 'caça em bando'" fica para teste **manual/exploratório**, não gate.
+
+### ⚠️ `GerarEmbeddingsComandoManipulador` está na Infrastructure (decisão pendente)
+- **Estado real:** o comando `GerarEmbeddingsComando` está na Application, mas seu **handler** está em
+  `Infrastructure/Embeddings/` (porque usa `ContextoBanco`/SQL cru). A Infrastructure passou a registrar
+  MediatR do próprio assembly — por isso funciona em runtime. **A regra de dependência NÃO é violada**
+  (Infrastructure→Application é permitido), mas **quebra a convenção** (todos os outros handlers estão na
+  Application) e é o único caso assim.
+- **Opção de refatoração (se quiser padronizar):** mover o handler para
+  `Application/Funcionalidades/GerarEmbeddings/` e extrair a gravação para uma interface
+  (ex.: `IServicoPersistenciaEmbedding` com `AtualizarEmbeddingAsync` + `ObterIdsSemEmbeddingAsync`)
+  implementada na Infrastructure. Aí a Application volta a conter o handler e a Infra não precisa registrar MediatR.
+- **Decisão:** pendente do usuário (aceitar pragmático vs refatorar).

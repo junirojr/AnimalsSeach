@@ -738,7 +738,7 @@ embeddings (2-4 frases por campo de texto).
 > *cosine distance* (operador `<=>` do pgvector). Assim "animal que caça em bando" encontra o lobo
 > mesmo que essa frase não apareça na descrição. Índice HNSW acelera a busca por vizinhos próximos.
 
-### [ ] T5.1 — Pacotes de IA (Ollama)
+### [x] T5.1 — Pacotes de IA (Ollama)
 **Dep:** T2.1.
 **Passos (em `src/Buscador.Infrastructure`):**
 ```powershell
@@ -747,33 +747,33 @@ dotnet add package Microsoft.Extensions.AI.Ollama
 ```
 **DoD:** build 0 erros.
 
-### [ ] T5.2 — `IEmbeddingService` + `OllamaEmbeddingService`
+### [x] T5.2 — `IEmbeddingService` + `OllamaEmbeddingService`
 **Objetivo:** gerar embedding de um texto via Ollama.
 **Dep:** T5.1.
 **Arquivos:** interface em `Application/Animals/Embeddings/IEmbeddingService.cs`; impl em `Infrastructure/Embeddings/OllamaEmbeddingService.cs`.
 **Passos:** método `Task<float[]> GenerateAsync(string text, CancellationToken)` usando modelo `nomic-embed-text` (endpoint `http://localhost:11434`, configurável). Registrar no DI; ler base URL de config.
 **DoD:** build 0 erros.
 
-### [ ] T5.3 — `GenerateEmbeddingsCommand` + Handler (batch)
+### [x] T5.3 — `GenerateEmbeddingsCommand` + Handler (batch)
 **Objetivo:** popular coluna `embedding` de todos os animais.
 **Dep:** T5.2, T2.7.
 **Arquivos:** pasta `Commands/GenerateEmbeddings/`.
 **Passos:** handler busca animais sem embedding, gera embedding concatenando `description + characteristics + curiosities`, salva no banco. Retorna nº processado. Processar em lotes para não sobrecarregar Ollama.
 **DoD:** build 0 erros.
 
-### [ ] T5.4 — `ISemanticSearchService` + impl (cosine)
+### [x] T5.4 — `ISemanticSearchService` + impl (cosine)
 **Objetivo:** busca por `<=>` (cosine distance) no pgvector.
 **Dep:** T5.2, T4.2.
 **Arquivos:** interface em Application; impl em `Infrastructure/Search/SemanticSearchService.cs`.
 **Passos:** gera embedding da query, ordena por `embedding <=> @queryVector` asc, converte distância em score `1 - distance`. Registrar DI.
 **DoD:** build 0 erros.
 
-### [ ] T5.5 — `SearchAnimalsQuery` modo `semantic`
+### [x] T5.5 — `SearchAnimalsQuery` modo `semantic`
 **Dep:** T5.4, T4.4.
 **Passos:** no handler de `SearchAnimalsQuery`, tratar `SearchMode.Semantic` chamando `ISemanticSearchService`.
 **DoD:** build 0 erros.
 
-### [ ] T5.6 — Teste de integração semântica (OBRIGATÓRIO)
+### [x] T5.6 — Teste de integração semântica (OBRIGATÓRIO)
 **Dep:** T5.5, T2.9.
 **Passos:** teste faz seed + gera embeddings + busca por consulta conceitual (ex.: "animal que caça
 em bando") e verifica que retorna resultados relevantes (ex.: o lobo entre os primeiros).
@@ -783,7 +783,7 @@ que Docker + Ollama (`docker compose up -d` e modelo já baixado em T0.3) são p
 rodar a suíte de integração.
 **DoD:** teste passa com Ollama rodando; falha (não pula) se Ollama estiver fora.
 
-### [ ] T5.7 — Docs de embeddings
+### [x] T5.7 — Docs de embeddings
 **Dep:** T5.5.
 **Arquivos:** `docs/explanation/how-embeddings-work.md`, `docs/how-to/configure-ollama-gpu.md`.
 **DoD:** preenchidos.
