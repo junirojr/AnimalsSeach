@@ -3,6 +3,7 @@ using Buscador.Application.Funcionalidades.GerarEmbeddings;
 using Buscador.Application.Funcionalidades.ObterAnimais;
 using Buscador.Application.Funcionalidades.ObterAnimalPorId;
 using Buscador.Application.Funcionalidades.PopularAnimais;
+using Buscador.Application.Funcionalidades.CadastrarAnimal;
 using MediatR;
 
 namespace Buscador.Api.Endpoints;
@@ -11,6 +12,12 @@ public static class EndpointsAnimais
 {
     public static void MapearEndpointsAnimais(this WebApplication app)
     {
+        app.MapPost("/api/animais", async (ISender mediator, CadastrarAnimalComando comando) =>
+        {
+            var id = await mediator.Send(comando);
+            return Results.Created($"/api/animais/{id}", new { id });
+        });
+
         app.MapPost("/api/animais/popular", async (ISender mediator) =>
         {
             var inseridos = await mediator.Send(new PopularAnimaisComando());

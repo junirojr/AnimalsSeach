@@ -11,6 +11,10 @@ builder.Services.AdicionarInfraestrutura(builder.Configuration);
 builder.Services.AddOpenApi();
 builder.Services.AddExceptionHandler<ManipuladorGlobalExcecoes>();
 builder.Services.AddProblemDetails();
+builder.Services.ConfigureHttpJsonOptions(opcoes =>
+{
+    opcoes.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+});
 
 const string PoliticaCors = "frontend";
 var origemFrontend = builder.Configuration["Cors:AllowedOrigin"] ?? "http://localhost:3000";
