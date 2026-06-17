@@ -12,9 +12,15 @@ builder.Services.AddOpenApi();
 builder.Services.AddExceptionHandler<ManipuladorGlobalExcecoes>();
 builder.Services.AddProblemDetails();
 
+const string PoliticaCors = "frontend";
+var origemFrontend = builder.Configuration["Cors:AllowedOrigin"] ?? "http://localhost:3000";
+builder.Services.AddCors(opcoes => opcoes.AddPolicy(PoliticaCors, politica => politica
+    .WithOrigins(origemFrontend).AllowAnyHeader().AllowAnyMethod()));
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseCors(PoliticaCors);
 
 app.MapOpenApi();
 app.MapScalarApiReference();
