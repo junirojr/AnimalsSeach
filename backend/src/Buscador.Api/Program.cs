@@ -4,6 +4,7 @@ using Buscador.Application.Funcionalidades.ObterAnimais;
 using Buscador.Application.Funcionalidades.ObterAnimalPorId;
 using Buscador.Application.Funcionalidades.GerarEmbeddings;
 using Buscador.Application.Funcionalidades.PopularAnimais;
+using Buscador.Api.TratamentoErros;
 using Buscador.Infrastructure;
 using MediatR;
 using Scalar.AspNetCore;
@@ -13,8 +14,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AdicionarAplicacao();
 builder.Services.AdicionarInfraestrutura(builder.Configuration);
 builder.Services.AddOpenApi();
+builder.Services.AddExceptionHandler<ManipuladorGlobalExcecoes>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 app.MapOpenApi();
 app.MapScalarApiReference();
