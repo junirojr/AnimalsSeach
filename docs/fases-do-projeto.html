@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Sparrow — As Fases do Projeto</title>
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#161b22; --bg3:#1c2330; --line:#30363d;
+    --txt:#e6edf3; --muted:#8b949e; --accent:#58a6ff; --accent2:#3fb950;
+    --warn:#d29922; --danger:#f85149; --purple:#bc8cff; --pink:#f778ba;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{padding:48px 24px 32px;text-align:center;
+    background:radial-gradient(ellipse at top,#1c2742 0%,var(--bg) 70%);border-bottom:1px solid var(--line)}
+  header h1{margin:0 0 8px;font-size:2.2rem;letter-spacing:-.5px}
+  header p{margin:4px 0;color:var(--muted)}
+  .badge{display:inline-block;background:var(--bg3);border:1px solid var(--line);
+    color:var(--muted);border-radius:999px;padding:3px 12px;font-size:.78rem;margin:3px}
+  .wrap{max-width:1080px;margin:0 auto;padding:24px}
+  /* timeline */
+  .toc{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:24px 0 8px}
+  .toc a{background:var(--bg2);border:1px solid var(--line);border-radius:8px;
+    padding:6px 12px;font-size:.85rem;color:var(--txt)}
+  .toc a:hover{border-color:var(--accent);text-decoration:none}
+  .phase{background:var(--bg2);border:1px solid var(--line);border-radius:14px;
+    margin:28px 0;overflow:hidden;scroll-margin-top:20px}
+  .phase-head{padding:18px 24px;display:flex;align-items:center;gap:16px;
+    background:linear-gradient(90deg,var(--bg3),var(--bg2));border-bottom:1px solid var(--line)}
+  .pnum{flex:0 0 auto;width:54px;height:54px;border-radius:12px;display:flex;
+    align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;
+    background:#1f6feb22;border:1px solid var(--accent);color:var(--accent)}
+  .phase-head h2{margin:0;font-size:1.35rem}
+  .phase-head .sub{color:var(--muted);font-size:.9rem;margin-top:2px}
+  .phase-body{padding:8px 24px 24px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .block h4{margin:14px 0 6px;font-size:.82rem;text-transform:uppercase;
+    letter-spacing:.6px;color:var(--accent2)}
+  .block.why h4{color:var(--purple)} .block.rel h4{color:var(--pink)}
+  .block.files h4{color:var(--accent)} .block.future h4{color:var(--warn)}
+  .block p,.block li{font-size:.93rem}
+  ul{margin:4px 0;padding-left:20px} li{margin:3px 0}
+  code{background:var(--bg3);border:1px solid var(--line);border-radius:5px;
+    padding:1px 6px;font-size:.84rem;font-family:Consolas,Menlo,monospace;color:#a5d6ff}
+  .file{display:block;font-family:Consolas,Menlo,monospace;font-size:.82rem;
+    color:var(--muted);margin:2px 0}
+  .file b{color:var(--txt);font-weight:600}
+  .tag{display:inline-block;font-size:.72rem;background:var(--bg3);border:1px solid var(--line);
+    border-radius:6px;padding:1px 8px;margin:2px 4px 2px 0;color:var(--muted)}
+  .lead{color:var(--muted);margin:6px 0 0;font-size:.97rem}
+  .flow{background:var(--bg);border:1px dashed var(--line);border-radius:10px;
+    padding:14px 18px;margin:24px 0;font-size:.9rem;color:var(--muted)}
+  .flow b{color:var(--txt)}
+  .arrow{color:var(--accent);font-weight:700}
+  footer{text-align:center;color:var(--muted);font-size:.82rem;padding:32px;border-top:1px solid var(--line)}
+  .pill-ok{color:var(--accent2)} .pill-warn{color:var(--warn)}
+  .note{background:#d2992216;border-left:3px solid var(--warn);padding:10px 14px;
+    border-radius:0 8px 8px 0;margin:14px 0;font-size:.9rem}
+</style>
+</head>
+<body>
+<header>
+  <h1>🐦 Deep Sparrow — As Fases do Projeto</h1>
+  <p>Motor de busca híbrido (full-text + semântico) sobre um catálogo de animais</p>
+  <p>
+    <span class="badge">.NET 10 · Clean Architecture · DDD</span>
+    <span class="badge">PostgreSQL 16 + pgvector</span>
+    <span class="badge">Ollama · bge-m3</span>
+    <span class="badge">Next.js · TypeScript</span>
+  </p>
+  <p style="font-size:.82rem">Documento de aprendizado · gerado em 17/06/2026</p>
+</header>
+
+<div class="wrap">
+
+  <p class="lead">Este documento conta a história do projeto fase a fase. Para cada fase você encontra
+  <b>por que ela importa</b>, <b>qual sua função</b> no produto, <b>como se relaciona</b> com o resto,
+  os <b>principais arquivos</b> e <b>pontos de melhoria</b> para o futuro. A ordem das fases não é
+  acidental: cada uma só é possível porque a anterior existe.</p>
+
+  <div class="flow">
+    <b>O fluxo de uma busca, ponta a ponta:</b><br>
+    Usuário digita no <b>frontend</b> <span class="arrow">→</span> <code>GET /api/animais/buscar</code>
+    (<b>Api</b>) <span class="arrow">→</span> <code>BuscarAnimaisConsulta</code> via MediatR (<b>Application</b>)
+    <span class="arrow">→</span> serviço de busca escolhido pelo modo (<b>Infrastructure</b>:
+    Textual / Semântica / Híbrida) <span class="arrow">→</span> PostgreSQL (<code>tsvector</code> e/ou
+    <code>pgvector</code>) <span class="arrow">→</span> resultados ranqueados de volta ao usuário.
+  </div>
+
+  <div class="toc">
+    <a href="#f0">0 · Ambiente</a>
+    <a href="#f1">1 · Domain</a>
+    <a href="#f2">2 · Banco</a>
+    <a href="#f3">3 · Application</a>
+    <a href="#f4">4 · Full-Text</a>
+    <a href="#f5">5 · Semântica</a>
+    <a href="#f6">6 · Híbrida (RRF)</a>
+    <a href="#f7">7 · API</a>
+    <a href="#f8">8 · Frontend</a>
+    <a href="#f9">9 · Verificação</a>
+  </div>
+
+  <!-- ============ FASE 0 ============ -->
+  <section class="phase" id="f0">
+    <div class="phase-head">
+      <div class="pnum">0</div>
+      <div><h2>Ambiente + Documentação Inicial</h2>
+      <div class="sub">A fundação: nada compila ou roda sem isto</div></div>
+    </div>
+    <div class="phase-body">
+      <p class="lead">Sobe a infraestrutura local (Docker), cria a solution .NET com os 4 projetos de
+      camada, inicializa o Next.js e monta o esqueleto de documentação (CLAUDE.md por camada + 4 quadrantes Diataxis).</p>
+      <div class="grid">
+        <div class="block why"><h4>Por que importa</h4>
+          <p>Define as <b>regras do jogo</b> antes de uma linha de lógica: idioma do código (português sem
+          acento), padrão de commits, regra de dependência entre camadas. Erros de fundação se propagam por todo o projeto.</p></div>
+        <div class="block rel"><h4>Como se relaciona</h4>
+          <p>Cria os contêineres (PostgreSQL+pgvector e Ollama) que as fases 2 e 5 vão usar, e a estrutura
+          de pastas que <b>todas</b> as fases seguintes preenchem. Os <code>CLAUDE.md</code> orientam a IA em cada camada.</p></div>
+        <div class="block files"><h4>Principais arquivos</h4>
+          <span class="file"><b>docker-compose.yml</b> — pgvector/pg16 + ollama</span>
+          <span class="file"><b>backend/Buscador.slnx</b> — solution + 4 projetos</span>
+          <span class="file"><b>CLAUDE.md</b> (raiz + por camada)</span>
+          <span class="file"><b>docs/</b> — tutorials / how-to / reference / explanation / ai</span></div>
+        <div class="block future"><h4>Pontos de melhoria</h4>
+          <ul><li>Não há CI (GitHub Actions) rodando build+testes a cada push.</li>
+          <li>Slash commands previstos (<code>/seed</code>, <code>/embeddings</code>) e <code>docker exec ollama ollama pull</code> não estão automatizados num script de bootstrap.</li></ul></div>
+      </div>
+      <span class="tag">Docker</span><span class="tag">.slnx</span><span class="tag">Diataxis</span><span class="tag">Engenharia de contexto</span>
+    </div>
+  </section>
+
+  <!-- ============ FASE 1 ============ -->
+  <section class="phase" id="f1">
+    <div class="phase-head">
+      <div class="pnum">1</div>
+      <div><h2>Domain Layer</h2>
+      <div class="sub">O coração das regras de negócio — sem dependências externas</div></div>
+    </div>
+    <div class="phase-body">
+      <p class="lead">Modela o domínio puro: classes base (<code>Entidade</code>, <code>RaizAgregada</code>,
+      <code>ObjetoDeValor</code>), o agregado <code>Animal</code> com fábrica <code>Criar</code>, o value object
+      <code>AnimalId</code>, os enums (<code>Dieta</code>, <code>Habitat</code>, <code>StatusConservacao</code>)
+      e a interface <code>IRepositorioAnimal</code>.</p>
+      <div class="grid">
+        <div class="block why"><h4>Por que importa</h4>
+          <p>É a única camada que <b>nunca</b> referencia EF Core, Npgsql ou MediatR. Isolar as regras
+          torna o negócio testável sem banco e protege contra acoplamento — trocar PostgreSQL por outro banco não toca aqui.</p></div>
+        <div class="block rel"><h4>Como se relaciona</h4>
+          <p>Fica no centro da regra <code>Domain ← Application ← Infrastructure ← Api</code>. A Application
+          orquestra estes objetos; a Infrastructure implementa <code>IRepositorioAnimal</code>. Os campos de
+          busca (<code>VetorBusca</code>, <code>Embedding</code>) ficam de fora — entram como <b>shadow properties</b> na Fase 2.</p></div>
+        <div class="block files"><h4>Principais arquivos</h4>
+          <span class="file"><b>Domain/Animais/Animal.cs</b> — agregado + Criar</span>
+          <span class="file"><b>Domain/Animais/AnimalId.cs</b> — value object</span>
+          <span class="file"><b>Domain/Animais/{Dieta,Habitat,StatusConservacao}.cs</b></span>
+          <span class="file"><b>Domain/Animais/IRepositorioAnimal.cs</b></span>
+          <span class="file"><b>Domain/Comum/{Entidade,RaizAgregada,ObjetoDeValor}.cs</b></span></div>
+        <div class="block future"><h4>Pontos de melhoria</h4>
+          <ul><li>Não há eventos de domínio (domain events) — útil se o projeto crescer.</li>
+          <li>Validações de invariantes no <code>Criar</code> poderiam ser mais ricas (ex.: tags não vazias).</li></ul></div>
+      </div>
+      <span class="tag">DDD</span><span class="tag">Value Object</span><span class="tag">Aggregate Root</span><span class="tag">xUnit + FluentAssertions</span>
+    </div>
+  </section>
+
+  <!-- ============ FASE 2 ============ -->
+  <section class="phase" id="f2">
+    <div class="phase-head">
+      <div class="pnum">2</div>
+      <div><h2>Infrastructure — Banco de Dados</h2>
+      <div class="sub">Onde o domínio encontra o PostgreSQL</div></div>
+    </div>
+    <div class="phase-body">
+      <p class="lead">Implementa <code>ContextoBanco</code> (EF Core + Npgsql + pgvector), a configuração
+      Fluent <code>AnimalConfiguracao</code> (mapeia a tabela <code>animais</code>, enums como texto, e as
+      shadow properties <code>search_vector</code>/<code>embedding</code>), as migrations com índices
+      <b>GIN</b> (FTS) e <b>HNSW</b> (vetores), e o <code>RepositorioAnimal</code>.</p>
+      <div class="grid">
+        <div class="block why"><h4>Por que importa</h4>
+          <p>Traduz o domínio limpo para tabelas reais sem poluir o <code>Domain</code>. As <b>shadow
+          properties</b> são a chave: o banco sabe de <code>tsvector</code> e <code>vector(1024)</code>, mas a classe <code>Animal</code> não.</p></div>
+        <div class="block rel"><h4>Como se relaciona</h4>
+          <p>Implementa o contrato <code>IRepositorioAnimal</code> da Fase 1. Os índices GIN e HNSW criados aqui
+          são o que torna as buscas das Fases 4–6 rápidas. Os testes usam <b>Testcontainers</b> — um PostgreSQL real em Docker.</p></div>
+        <div class="block files"><h4>Principais arquivos</h4>
+          <span class="file"><b>Infrastructure/Persistencia/ContextoBanco.cs</b></span>
+          <span class="file"><b>.../Configuracoes/AnimalConfiguracao.cs</b></span>
+          <span class="file"><b>.../Persistencia/RepositorioAnimal.cs</b></span>
+          <span class="file"><b>Infrastructure/Migrations/*CriacaoInicial*</b> — GIN + HNSW</span>
+          <span class="file"><b>tests/.../Fixtures/ApiTestFixture.cs</b></span></div>
+        <div class="block future"><h4>Pontos de melhoria</h4>
+          <ul><li>2 avisos de build conhecidos no <code>ApiTestFixture.cs</code> (<code>DisposeAsync</code> oculta herdado; <code>PostgreSqlBuilder()</code> obsoleto).</li>
+          <li>A coluna <code>animais.embedding</code> (vetor único por animal) ficou legada após a adoção do multi-vetor por fragmentos.</li></ul></div>
+      </div>
+      <span class="tag">EF Core 10</span><span class="tag">pgvector</span><span class="tag">GIN + HNSW</span><span class="tag">Shadow properties</span><span class="tag">Testcontainers</span>
+    </div>
+  </section>
+
+  <!-- ============ FASE 3 ============ -->
+  <section class="phase" id="f3">
+    <div class="phase-head">
+      <div class="pnum">3</div>
+      <div><h2>Application Layer</h2>
+      <div class="sub">Casos de uso em Vertical Slices (CQRS com MediatR)</div></div>
+    </div>
+    <div class="phase-body">
+      <p class="lead">Cada caso de uso vive em sua própria pasta em <code>Funcionalidades/</code>: consulta/comando
+      + manipulador + validador. Inclui <code>ObterAnimalPorId</code>, <code>ObterAnimais</code> (paginada),
+      <code>PopularAnimais</code> (dados-semente) e os DTOs/mapeamentos em <code>Compartilhado/</code>.</p>
+      <div class="grid">
+        <div class="block why"><h4>Por que importa</h4>
+          <p>Separa <b>o que o sistema faz</b> (casos de uso) de <b>como faz</b> (Infrastructure). O padrão
+          Vertical Slice mantém cada feature coesa e fácil de achar; o MediatR desacopla a Api dos handlers.</p></div>
+        <div class="block rel"><h4>Como se relaciona</h4>
+          <p>Depende só do <code>Domain</code>. Define interfaces (<code>IServicoBuscaTextual</code>,
+          <code>IServicoEmbedding</code>…) que a Infrastructure implementa nas fases seguintes. A Api (Fase 7)
+          só chama <code>mediator.Send(...)</code>. A validação roda via <code>ComportamentoValidacao</code> (pipeline).</p></div>
+        <div class="block files"><h4>Principais arquivos</h4>
+          <span class="file"><b>Application/Funcionalidades/PopularAnimais/</b> — Comando + DadosSementeAnimal</span>
+          <span class="file"><b>.../ObterAnimais/</b> · <b>ObterAnimalPorId/</b></span>
+          <span class="file"><b>Application/Compartilhado/</b> — DTOs, interfaces, FusaoRrf</span>
+          <span class="file"><b>Application/Comportamentos/ComportamentoValidacao.cs</b></span></div>
+        <div class="block future"><h4>Pontos de melhoria</h4>
+          <ul><li>Não há paginação com metadados (total, páginas) — só itens.</li>
+          <li>Mapeamento DTO manual; poderia usar um mapeador se a quantidade crescer (hoje manter manual é mais didático).</li></ul></div>
+      </div>
+      <span class="tag">CQRS</span><span class="tag">MediatR</span><span class="tag">Vertical Slice</span><span class="tag">FluentValidation</span><span class="tag">Moq</span>
+    </div>
+  </section>
+
+  <!-- ============ FASE 4 ============ -->
+  <section class="phase" id="f4">
+    <div class="phase-head">
+      <div class="pnum">4</div>
+      <div><h2>Full-Text Search (FTS)</h2>
+      <div class="sub">Busca por palavras-chave nativa do PostgreSQL</div></div>
+    </div>
+    <div class="phase-body">
+      <p class="lead">Um gatilho preenche <code>search_vector</code> (<code>to_tsvector</code> em
+      <code>portuguese</code>) automaticamente a cada INSERT/UPDATE. O <code>ServicoBuscaTextual</code>
+      consulta com <code>tsquery</code> e ranqueia por <code>ts_rank</code>.</p>
+      <div class="grid">
+        <div class="block why"><h4>Por que importa</h4>
+          <p>É a busca <b>léxica</b>: rápida, exata, ótima para termos específicos (nome, tag). Serve de
+          baseline e de uma das duas pernas da busca híbrida. Roda inteiramente no banco, sem IA.</p></div>
+        <div class="block rel"><h4>Como se relaciona</h4>
+          <p>Usa o índice GIN da Fase 2 e implementa <code>IServicoBuscaTextual</code> da Fase 3. É o primeiro
+          modo de <code>BuscarAnimais</code>. Mais tarde (F6.1) ganhou <b>recall</b>: <code>OR</code> entre
+          termos + <code>unaccent</code> + indexação de mais campos (distribuição geográfica, tags).</p></div>
+        <div class="block files"><h4>Principais arquivos</h4>
+          <span class="file"><b>Infrastructure/Busca/ServicoBuscaTextual.cs</b></span>
+          <span class="file"><b>Migrations/*GatilhoVetorBusca*</b></span>
+          <span class="file"><b>Migrations/*RecallFtsUnaccentMaisCampos*</b> (F6.1)</span>
+          <span class="file"><b>Application/Funcionalidades/BuscarAnimais/</b></span>
+          <span class="file"><b>docs/explanation/how-fts-works.md</b></span></div>
+        <div class="block future"><h4>Pontos de melhoria</h4>
+          <ul><li>Não há realce (<code>ts_headline</code>) dos trechos que casaram.</li>
+          <li>Pesos por campo (<code>setweight</code>) dariam mais relevância ao nome vs. curiosidades.</li></ul></div>
+      </div>
+      <span class="tag">tsvector / tsquery</span><span class="tag">ts_rank</span><span class="tag">unaccent</span><span class="tag">Gatilho SQL</span>
+    </div>
+  </section>
+
+  <!-- ============ FASE 5 ============ -->
+  <section class="phase" id="f5">
+    <div class="phase-head">
+      <div class="pnum">5</div>
+      <div><h2>Busca Semântica</h2>
+      <div class="sub">Busca por significado com embeddings e pgvector</div></div>
+    </div>
+    <div class="phase-body">
+      <p class="lead">O <code>ServicoEmbeddingOllama</code> gera vetores via Ollama; o
+      <code>GerarEmbeddingsComando</code> popula o banco; o <code>ServicoBuscaSemantica</code> busca por
+      distância de cosseno (<code>&lt;=&gt;</code>). Evoluiu por etapas até a estratégia <b>multi-vetor</b>.</p>
+      <div class="grid">
+        <div class="block why"><h4>Por que importa</h4>
+          <p>Encontra resultados por <b>sentido</b>, não por palavra: "predador dos oceanos" acha "tubarão"
+          mesmo sem o termo aparecer. É a perna semântica da busca híbrida.</p></div>
+        <div class="block rel"><h4>Como se relaciona</h4>
+          <p>Usa o índice HNSW da Fase 2 e o Ollama da Fase 0. A geração de embeddings grava via <b>SQL cru</b>
+          (pgvector não tem tradução LINQ). A busca alimenta o modo semântico e, junto da FTS, a Fase 6.</p></div>
+        <div class="block files"><h4>Principais arquivos</h4>
+          <span class="file"><b>Infrastructure/Embeddings/ServicoEmbeddingOllama.cs</b></span>
+          <span class="file"><b>Application/.../GerarEmbeddings/FragmentadorAnimal.cs</b></span>
+          <span class="file"><b>Infrastructure/Busca/ServicoBuscaSemantica.cs</b></span>
+          <span class="file"><b>Infrastructure/Embeddings/ServicoPersistenciaFragmentos.cs</b></span>
+          <span class="file"><b>docs/explanation/how-embeddings-work.md</b></span></div>
+        <div class="block future"><h4>Pontos de melhoria</h4>
+          <ul><li>Re-geração é "tudo ou nada" por animal (só processa quem não tem fragmento); não há atualização incremental por campo alterado.</li>
+          <li>Não há cache do embedding da consulta (cada busca chama o Ollama).</li></ul></div>
+      </div>
+      <div class="note"><b>A jornada da qualidade semântica (vários commits):</b> prefixos do nomic →
+      incluir Nome+Tags no texto → <b>multi-vetor por fragmentos</b> (1 animal → N vetores, busca por
+      <i>max-sim</i> com <code>MIN(... <=>)</code>) → troca do modelo para <b>bge-m3</b> (1024 dim, multilíngue,
+      sem prefixos) → tags <b>contextualizadas</b> (<code>"NomeComum: tag"</code>) para evitar empate de chunks.</div>
+      <span class="tag">Ollama</span><span class="tag">bge-m3</span><span class="tag">pgvector &lt;=&gt;</span><span class="tag">Multi-vetor / max-sim</span><span class="tag">SQL cru</span>
+    </div>
+  </section>
+
+  <!-- ============ FASE 6 ============ -->
+  <section class="phase" id="f6">
+    <div class="phase-head">
+      <div class="pnum">6</div>
+      <div><h2>Busca Híbrida (RRF)</h2>
+      <div class="sub">O melhor dos dois mundos: léxico + semântico</div></div>
+    </div>
+    <div class="phase-body">
+      <p class="lead">O <code>ServicoBuscaHibrida</code> roda as buscas textual e semântica em paralelo sobre um
+      pool de candidatos e funde os rankings com <b>Reciprocal Rank Fusion</b> (<code>FusaoRrf</code>):
+      <code>score = Σ 1/(k+posição)</code>, k=60, normalizado para 0–1.</p>
+      <div class="grid">
+        <div class="block why"><h4>Por que importa</h4>
+          <p>FTS é exata mas "burra"; semântica é esperta mas difusa. O RRF combina as duas <b>sem precisar
+          comparar escalas de score</b> (usa só a posição) — robusto a outliers e simples de raciocinar.</p></div>
+        <div class="block rel"><h4>Como se relaciona</h4>
+          <p>Consome os serviços das Fases 4 e 5; <code>FusaoRrf</code> é função pura na Application (testável
+          sem banco). É o terceiro e principal modo de <code>BuscarAnimais</code>.</p></div>
+        <div class="block files"><h4>Principais arquivos</h4>
+          <span class="file"><b>Application/Compartilhado/FusaoRrf.cs</b> — função pura</span>
+          <span class="file"><b>Application/Compartilhado/IServicoBuscaHibrida.cs</b></span>
+          <span class="file"><b>Infrastructure/Busca/ServicoBuscaHibrida.cs</b></span>
+          <span class="file"><b>docs/explanation/rrf-algorithm.md</b> <span class="pill-warn">(stub a preencher)</span></span>
+          <span class="file"><b>docs/comparativos-busca.html</b> — relatório vivo</span></div>
+        <div class="block future"><h4>Pontos de melhoria</h4>
+          <ul><li>RRF com peso igual entre as pernas; pesos ajustáveis (<code>tune-search-weights</code>) ainda não implementados nem documentados.</li>
+          <li>Pool fixo (<code>max(limite,20)</code>) — poderia ser configurável.</li></ul></div>
+      </div>
+      <div class="note"><b>Sub-fases:</b> <b>F6.1</b> deu recall ao FTS (OR + unaccent + mais campos) — foi o que
+      resgatou "predador dos oceanos". <b>F6.2</b> trouxe geração em <b>batch</b> (regeneração 140s → 43s, ~3,2×)
+      e a normalização do score RRF para 0–1.</div>
+      <span class="tag">RRF (k=60)</span><span class="tag">Fusão de rankings</span><span class="tag">Função pura</span><span class="tag">Batch embeddings</span>
+    </div>
+  </section>
+
+  <!-- ============ FASE 7 ============ -->
+  <section class="phase" id="f7">
+    <div class="phase-head">
+      <div class="pnum">7</div>
+      <div><h2>API Layer</h2>
+      <div class="sub">A porta HTTP — fina, sem regra de negócio</div></div>
+    </div>
+    <div class="phase-body">
+      <p class="lead">Os 5 endpoints vivem em <code>EndpointsAnimais.cs</code> (extensão
+      <code>MapearEndpointsAnimais</code>); o <code>Program.cs</code> é só wiring. Inclui Scalar (OpenAPI),
+      CORS para o frontend e tratamento global de erros (<code>IExceptionHandler</code>: ValidationException → 400, resto → 500).</p>
+      <div class="grid">
+        <div class="block why"><h4>Por que importa</h4>
+          <p>Expõe a aplicação ao mundo de forma consistente. Cada endpoint faz 3 coisas: lê input, chama
+          <code>mediator.Send</code>, devolve <code>Results.*</code>. O handler global garante respostas de erro padronizadas (ProblemDetails).</p></div>
+        <div class="block rel"><h4>Como se relaciona</h4>
+          <p>Topo da pilha de dependências; só conhece a Application via MediatR. O CORS aqui libera a origem
+          do frontend da Fase 8. O Scalar permite testar manualmente todos os modos de busca.</p></div>
+        <div class="block files"><h4>Principais arquivos</h4>
+          <span class="file"><b>Api/Endpoints/EndpointsAnimais.cs</b></span>
+          <span class="file"><b>Api/TratamentoErros/ManipuladorGlobalExcecoes.cs</b></span>
+          <span class="file"><b>Api/Program.cs</b> — wiring (~31 linhas)</span>
+          <span class="file"><b>docs/reference/api-endpoints.md</b></span></div>
+        <div class="block future"><h4>Pontos de melhoria</h4>
+          <ul><li>Sem autenticação/rate-limiting (ok para projeto local).</li>
+          <li>Sem versionamento de API nem health-check endpoint.</li></ul></div>
+      </div>
+      <span class="tag">Minimal API</span><span class="tag">Scalar / OpenAPI</span><span class="tag">IExceptionHandler</span><span class="tag">CORS</span><span class="tag">porta 5024</span>
+    </div>
+  </section>
+
+  <!-- ============ FASE 8 ============ -->
+  <section class="phase" id="f8">
+    <div class="phase-head">
+      <div class="pnum">8</div>
+      <div><h2>Frontend Next.js</h2>
+      <div class="sub">A interface que dá rosto à busca</div></div>
+    </div>
+    <div class="phase-body">
+      <p class="lead">App Router + TypeScript + Tailwind + TanStack Query. A página eleva o estado (termo + modo)
+      e distribui para <code>BarraBusca</code> (debounce), <code>AlternadorModo</code> (Textual/Semântica/Híbrida),
+      grid de <code>CartaoAnimal</code> e o <code>DetalheAnimal</code>. Testes com Jest+RTL+MSW e E2E com Playwright.</p>
+      <div class="grid">
+        <div class="block why"><h4>Por que importa</h4>
+          <p>Transforma a API num produto usável. Permite comparar visualmente os 3 modos de busca — o objetivo
+          de aprendizado central do projeto.</p></div>
+        <div class="block rel"><h4>Como se relaciona</h4>
+          <p>Consome <code>GET /api/animais/buscar</code> via <code>services/animais.ts</code> (TanStack Query).
+          Os enums chegam como <b>números</b> e são traduzidos pelos mapas em <code>types/animal.ts</code>
+          (ordem espelha os enums do Domain). MSW mocka a API nos testes de componente.</p></div>
+        <div class="block files"><h4>Principais arquivos</h4>
+          <span class="file"><b>frontend/src/app/page.tsx</b> — orquestra tudo</span>
+          <span class="file"><b>components/busca/{BarraBusca,AlternadorModo}.tsx</b></span>
+          <span class="file"><b>components/animais/{CartaoAnimal,DetalheAnimal}.tsx</b></span>
+          <span class="file"><b>services/animais.ts</b> · <b>types/animal.ts</b></span>
+          <span class="file"><b>e2e/busca.spec.ts</b> (Playwright)</span></div>
+        <div class="block future"><h4>Pontos de melhoria</h4>
+          <ul><li>Sem realce dos termos casados nem indicador de qual perna (FTS/semântica) trouxe o resultado.</li>
+          <li>Sem paginação/scroll infinito na UI (limite fixo).</li>
+          <li>Inconsistência de versão do Next nos docs (raiz diz 15, frontend/CLAUDE.md diz 16).</li></ul></div>
+      </div>
+      <span class="tag">Next.js App Router</span><span class="tag">TanStack Query</span><span class="tag">Tailwind</span><span class="tag">Jest + RTL + MSW</span><span class="tag">Playwright</span>
+    </div>
+  </section>
+
+  <!-- ============ FASE 9 ============ -->
+  <section class="phase" id="f9">
+    <div class="phase-head">
+      <div class="pnum">9</div>
+      <div><h2>Verificação Final</h2>
+      <div class="sub">Catálogo cheio, fluxo ponta a ponta provado, docs fechados</div></div>
+    </div>
+    <div class="phase-body">
+      <p class="lead">Expande o seed de 10 → <b>52 animais</b> (mamíferos, aves, répteis, anfíbios, peixes,
+      marinhos, insetos/aracnídeos), roda o roteiro de verificação ponta a ponta (infra → migrations → seed →
+      embeddings → 3 modos → testes → frontend → E2E) e preenche a documentação Diataxis.</p>
+      <div class="grid">
+        <div class="block why"><h4>Por que importa</h4>
+          <p>Com poucos animais, o ranking não diz muito; com 52 a busca híbrida fica significativa e os
+          modos passam a ter diferenças visíveis. É o selo de "funciona de verdade, de ponta a ponta".</p></div>
+        <div class="block rel"><h4>Como se relaciona</h4>
+          <p>Exercita todas as fases juntas. O novo seed obriga a re-popular e re-gerar embeddings (Fases 3 e 5);
+          o roteiro toca Api (7), Infra (2,4,5,6) e Frontend (8) numa só passada.</p></div>
+        <div class="block files"><h4>Principais arquivos</h4>
+          <span class="file"><b>Application/.../PopularAnimais/DadosSementeAnimal.cs</b> — 52 animais</span>
+          <span class="file"><b>docs/reference/{database-schema,environment-variables}.md</b></span>
+          <span class="file"><b>docs/how-to/{add-new-animal-species,reset-database,run-integration-tests}.md</b></span>
+          <span class="file"><b>docs/explanation/{architecture-decisions,why-pgvector}.md</b></span></div>
+        <div class="block future"><h4>Pontos de melhoria / pendências</h4>
+          <ul><li><span class="pill-warn">7 docs ainda são stubs</span> ("TODO: preencher"): tutoriais 01–04, <code>rrf-algorithm</code>, <code>tune-search-weights</code>, <code>search-modes</code>.</li>
+          <li><span class="pill-warn">Porta errada</span> (5000 em vez de 5024) em <code>add-new-animal-species</code>, <code>reset-database</code> e <code>api-endpoints</code>.</li>
+          <li><code>backend/src/Buscador.Infrastructure/CLAUDE.md</code> está em inglês/desatualizado vs. o código PT.</li></ul></div>
+      </div>
+      <span class="tag">52 animais</span><span class="tag">Roteiro E2E</span><span class="tag">Diataxis</span><span class="tag">Verificação empírica</span>
+    </div>
+  </section>
+
+  <div class="flow" style="margin-top:36px">
+    <b>Como tudo se encaixa:</b> as Fases 0–3 constroem a fundação (infra, domínio, banco, casos de uso).
+    As Fases 4–6 são o <b>motor de busca</b>, cada uma adicionando uma capacidade que a próxima combina
+    (léxico → semântico → híbrido). A Fase 7 expõe via HTTP, a Fase 8 dá interface, e a Fase 9 enche o
+    catálogo e prova o todo. A regra de dependência <code>Domain ← Application ← Infrastructure ← Api</code>
+    se mantém de ponta a ponta — é o que permitiu trocar o modelo de embedding ou dar recall ao FTS sem
+    tocar no domínio.
+  </div>
+
+</div>
+
+<footer>
+  Deep Sparrow · projeto de aprendizado (C#/.NET 10 · Clean Architecture · busca híbrida)<br>
+  Documento gerado em 17/06/2026 — companheiro de <code>docs/comparativos-busca.html</code>
+</footer>
+</body>
+</html>

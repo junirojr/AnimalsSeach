@@ -63,7 +63,10 @@
     <div class="meta" style="margin-top:6px">
       <span><b>FTS:</b> <code>to_tsquery</code> OR + <code>unaccent</code>; indexa nome, descrição, características, curiosidades, distribuição e tags</span>
       <span><b>Híbrido:</b> Reciprocal Rank Fusion (k=60), peso igual, pontuação normalizada 0–1</span>
-      <span><b>Geração:</b> embeddings em lote (batch) — ~43s p/ 150 fragmentos</span>
+      <span><b>Geração:</b> embeddings em lote (batch)</span>
+    </div>
+    <div class="meta" style="margin-top:6px">
+      <span><b>Catálogo:</b> 52 animais · 780 fragmentos (todos com embedding)</span>
     </div>
   </div>
 
@@ -78,14 +81,125 @@
       <li><span class="date">F6</span> — Busca <b>Híbrida (RRF)</b> fundindo FTS + semântica. Vence quando o FTS dispara.</li>
       <li><span class="date">F6.1</span> — <b>Recall do FTS</b> (OR + unaccent + mais campos) e <b>tags contextualizadas</b>. Resgata "predador dos oceanos".</li>
       <li><span class="date">F6.2</span> — <b>Geração em lote</b> (140s → 43s) e <b>pontuação do RRF normalizada 0–1</b>. Sem mudança de ranking.</li>
+      <li><span class="date">F9</span> — <b>Catálogo expandido 10 → 52 animais</b> (780 fragmentos). Ranking refeito; semântica fica mais ruidosa, híbrido domina em coerência.</li>
     </ul>
   </div>
 
   <!-- ====================================================================== -->
   <!-- ============== RUN: cole novos comparativos como este ================ -->
   <!-- ====================================================================== -->
+  <!-- ===== RUN F9 — CATÁLOGO 52 ANIMAIS ===== -->
+  <h2>📊 2026-06-17 — F9 (catálogo de 52 animais) <span class="badge b-good">ATUAL</span></h2>
+  <div class="card">
+    <div class="meta">
+      <span><b>Setup:</b> bge-m3 1024 · multi-vetor · tags contextualizadas · FTS OR+unaccent · RRF k=60 (0–1)</span>
+      <span><b>Catálogo:</b> 52 animais (antes 10) · 780 fragmentos</span>
+      <span><b>Verificação:</b> 23 testes verdes (integração 8/8 sobre os 52 animais)</span>
+    </div>
+    <p class="verdict">Com <b>5×</b> mais animais o ranking mudou e ficou mais exigente. Padrão claro: o
+    <b>híbrido</b> entrega o topo mais coerente; a <b>semântica pura</b> ganha ruído (mais candidatos disputando)
+    e o <b>textual</b> mostra bom recall quando o termo casa em nome/tag/distribuição. Top-5 por modo:</p>
+
+    <h3>"predador dos oceanos" <span class="badge b-warn">semântica ruidosa</span></h3>
+    <div class="grid">
+      <div class="mode"><h4>Textual</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Tubarão-branco</td><td class="score">0.079</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Orca</td><td class="score">0.076</td></tr>
+        <tr><td class="rank">3</td><td>Atum-rabilho</td><td class="score">0.068</td></tr>
+        <tr><td class="rank">4</td><td class="miss">Aranha-caranguejeira</td><td class="score">0.043</td></tr>
+        <tr><td class="rank">5</td><td class="miss">Libélula-imperador</td><td class="score">0.041</td></tr></table></div>
+      <div class="mode"><h4>Semântica</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Orca</td><td class="score">0.681</td></tr>
+        <tr><td class="rank">2</td><td>Estrela-do-mar-comum</td><td class="score">0.673</td></tr>
+        <tr><td class="rank">3</td><td class="miss">Coruja-das-torres</td><td class="score">0.652</td></tr>
+        <tr><td class="rank">4</td><td class="miss">Leão</td><td class="score">0.649</td></tr>
+        <tr><td class="rank">5</td><td>Crocodilo-do-nilo</td><td class="score">0.642</td></tr></table></div>
+      <div class="mode"><h4>Híbrida</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Orca</td><td class="score">1.000</td></tr>
+        <tr><td class="rank">2</td><td>Crocodilo-do-nilo</td><td class="score">0.946</td></tr>
+        <tr><td class="rank">3</td><td>Estrela-do-mar-comum</td><td class="score">0.923</td></tr>
+        <tr><td class="rank">4</td><td class="miss">Aranha-caranguejeira</td><td class="score">0.920</td></tr>
+        <tr><td class="rank">5</td><td>Atum-rabilho</td><td class="score">0.915</td></tr></table></div>
+    </div>
+    <p class="verdict">O <b>textual</b> traz os dois predadores marinhos reais no topo (recall ✅). A semântica
+    deixa entrar Coruja/Leão; o híbrido coroa Orca em #1, mas o achatamento do RRF deixa passar ruído (Aranha).</p>
+
+    <h3>"animal que vive em grupo e caça em bando" <span class="badge b-good">híbrido excelente</span></h3>
+    <div class="grid">
+      <div class="mode"><h4>Textual</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Orca</td><td class="score">0.043</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Gorila</td><td class="score">0.043</td></tr>
+        <tr><td class="rank">3</td><td>Avestruz</td><td class="score">0.040</td></tr>
+        <tr><td class="rank">4</td><td class="hit">Golfinho</td><td class="score">0.036</td></tr>
+        <tr><td class="rank">5</td><td class="hit">Chimpanzé</td><td class="score">0.036</td></tr></table></div>
+      <div class="mode"><h4>Semântica</h4>
+        <table><tr><td class="rank">1</td><td>Hipopótamo</td><td class="score">0.700</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Gorila</td><td class="score">0.674</td></tr>
+        <tr><td class="rank">3</td><td class="hit">Leão</td><td class="score">0.674</td></tr>
+        <tr><td class="rank">4</td><td class="hit">Golfinho</td><td class="score">0.670</td></tr>
+        <tr><td class="rank">5</td><td class="hit">Chimpanzé</td><td class="score">0.666</td></tr></table></div>
+      <div class="mode"><h4>Híbrida</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Gorila</td><td class="score">1.000</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Leão</td><td class="score">0.968</td></tr>
+        <tr><td class="rank">3</td><td class="hit">Golfinho</td><td class="score">0.953</td></tr>
+        <tr><td class="rank">4</td><td>Avestruz</td><td class="score">0.940</td></tr>
+        <tr><td class="rank">5</td><td class="hit">Chimpanzé</td><td class="score">0.939</td></tr></table></div>
+    </div>
+    <p class="verdict">Melhor caso do híbrido: 4 dos 5 são animais sociais/de bando (Gorila, Leão, Golfinho,
+    Chimpanzé). A semântica entende a <i>frase</i> inteira — algo que o FTS sozinho jamais faria.</p>
+
+    <h3>"inseto que poliniza flores" <span class="badge b-good">híbrido ok</span></h3>
+    <div class="grid">
+      <div class="mode"><h4>Textual</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Abelha-europeia</td><td class="score">0.074</td></tr>
+        <tr><td class="rank">2</td><td>Beija-flor-de-garganta-rubi</td><td class="score">0.055</td></tr>
+        <tr><td class="rank">3</td><td>Libélula-imperador</td><td class="score">0.028</td></tr>
+        <tr><td class="rank">4</td><td>Louva-a-deus</td><td class="score">0.028</td></tr>
+        <tr><td class="rank">5</td><td>Formiga-cortadeira</td><td class="score">0.025</td></tr></table></div>
+      <div class="mode"><h4>Semântica</h4>
+        <table><tr><td class="rank">1</td><td>Beija-flor-de-garganta-rubi</td><td class="score">0.582</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Abelha-europeia</td><td class="score">0.550</td></tr>
+        <tr><td class="rank">3</td><td class="miss">Rinoceronte-branco</td><td class="score">0.514</td></tr>
+        <tr><td class="rank">4</td><td>Louva-a-deus</td><td class="score">0.511</td></tr>
+        <tr><td class="rank">5</td><td>Papagaio-militar</td><td class="score">0.510</td></tr></table></div>
+      <div class="mode"><h4>Híbrida</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Abelha-europeia</td><td class="score">1.000</td></tr>
+        <tr><td class="rank">2</td><td>Beija-flor-de-garganta-rubi</td><td class="score">1.000</td></tr>
+        <tr><td class="rank">3</td><td>Louva-a-deus</td><td class="score">0.961</td></tr>
+        <tr><td class="rank">4</td><td>Libélula-imperador</td><td class="score">0.954</td></tr>
+        <tr><td class="rank">5</td><td class="miss">Dragão-de-komodo</td><td class="score">0.905</td></tr></table></div>
+    </div>
+    <p class="verdict">Abelha (polinizador exato) lidera o híbrido; o Beija-flor também poliniza (mas é ave, não inseto).
+    A semântica deixa o Rinoceronte entrar — ruído típico de catálogo grande.</p>
+
+    <h3>"réptil venenoso do deserto" <span class="badge b-good">coerente</span></h3>
+    <div class="grid">
+      <div class="mode"><h4>Textual</h4>
+        <table><tr><td class="rank">1</td><td>Dragão-de-komodo</td><td class="score">0.048</td></tr>
+        <tr><td class="rank">2</td><td class="miss">Aranha-caranguejeira</td><td class="score">0.041</td></tr>
+        <tr><td class="rank">3</td><td class="hit">Cobra-real</td><td class="score">0.041</td></tr>
+        <tr><td class="rank">4</td><td class="hit">Escorpião-amarelo</td><td class="score">0.028</td></tr>
+        <tr><td class="rank">5</td><td>Iguana-verde</td><td class="score">0.025</td></tr></table></div>
+      <div class="mode"><h4>Semântica</h4>
+        <table><tr><td class="rank">1</td><td>Dragão-de-komodo</td><td class="score">0.626</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Escorpião-amarelo</td><td class="score">0.589</td></tr>
+        <tr><td class="rank">3</td><td class="miss">Tigre</td><td class="score">0.547</td></tr>
+        <tr><td class="rank">4</td><td>Iguana-verde</td><td class="score">0.544</td></tr>
+        <tr><td class="rank">5</td><td>Camaleão-pantera</td><td class="score">0.537</td></tr></table></div>
+      <div class="mode"><h4>Híbrida</h4>
+        <table><tr><td class="rank">1</td><td>Dragão-de-komodo</td><td class="score">1.000</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Escorpião-amarelo</td><td class="score">0.968</td></tr>
+        <tr><td class="rank">3</td><td>Camaleão-pantera</td><td class="score">0.938</td></tr>
+        <tr><td class="rank">4</td><td>Iguana-verde</td><td class="score">0.932</td></tr>
+        <tr><td class="rank">5</td><td class="hit">Cobra-real</td><td class="score">0.928</td></tr>
+      </table></div>
+    </div>
+    <p class="verdict">Mistura coerente de répteis + os peçonhentos do deserto (Escorpião, Cobra-real). O Komodo
+    lidera os três modos (mordida tóxica + porte de réptil pesa no vetor e no texto).</p>
+  </div>
+
   <!-- ===== RUN F6.2 ===== -->
-  <h2>📊 2026-06-16 — F6.2 (batch + RRF normalizado) <span class="badge b-good">ATUAL</span></h2>
+  <h2>📊 2026-06-16 — F6.2 (batch + RRF normalizado)</h2>
   <div class="card">
     <div class="meta">
       <span><b>Performance:</b> geração em lote — <b>140s → 43s</b> (~3,2× mais rápida)</span>
@@ -248,6 +362,9 @@
       <li><b>RRF usa posição, não magnitude</b> → achata sinal forte do FTS; pode pedir peso para casos como "predador dos oceanos".</li>
       <li><b>Recall do FTS é o gargalo do híbrido:</b> AND + campos não indexados faziam o FTS voltar vazio. OR + unaccent + mais campos resolveram.</li>
       <li><b>Stemming PT:</b> "voam" ≠ "voar" no dicionário <code>portuguese</code> → FTS perde flexões verbais.</li>
+      <li><b>Tamanho do catálogo amplifica o ruído semântico:</b> de 10 → 52 animais, a semântica pura passou a
+      deixar entrar irrelevantes no top-5 (Coruja em "predador dos oceanos", Rinoceronte em "poliniza flores");
+      o híbrido absorve melhor o aumento de candidatos e mantém o topo coerente.</li>
     </ul>
   </div>
 
