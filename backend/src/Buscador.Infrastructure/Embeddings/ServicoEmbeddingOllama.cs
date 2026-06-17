@@ -15,13 +15,13 @@ public class ServicoEmbeddingOllama : IServicoEmbedding
         _baseUrl = configuracao["Ollama:BaseUrl"] ?? "http://localhost:11434";
     }
 
-    public async Task<float[]> GerarAsync(string texto, TipoTextoEmbedding tipo, CancellationToken cancellationToken = default)
+    public async Task<float[]> GerarAsync(string texto, CancellationToken cancellationToken = default)
     {
-        var resultado = await GerarVariosAsync([texto], tipo, cancellationToken);
+        var resultado = await GerarVariosAsync([texto], cancellationToken);
         return resultado[0];
     }
 
-    public async Task<IReadOnlyList<float[]>> GerarVariosAsync(IReadOnlyList<string> textos, TipoTextoEmbedding tipo, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<float[]>> GerarVariosAsync(IReadOnlyList<string> textos, CancellationToken cancellationToken = default)
     {
         if (textos.Count == 0)
             return [];

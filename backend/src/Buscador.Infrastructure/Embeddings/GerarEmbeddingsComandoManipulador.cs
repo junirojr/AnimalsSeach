@@ -61,7 +61,7 @@ public sealed class GerarEmbeddingsComandoManipulador
 
                 // Lote: todos os fragmentos do animal numa unica chamada ao Ollama.
                 var vetores = await _servicoEmbedding.GerarVariosAsync(
-                    fragmentos, TipoTextoEmbedding.Documento, cancellationToken);
+                    fragmentos, cancellationToken);
 
                 for (var j = 0; j < fragmentos.Count; j++)
                 {
