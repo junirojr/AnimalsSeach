@@ -23,10 +23,20 @@ public static class FusaoRrf
             }
         }
 
-        return pontuacoes
+        var ordenados = pontuacoes
             .OrderByDescending(p => p.Value)
             .Take(limite)
-            .Select(p => new ResultadoBuscaDto(animais[p.Key], p.Value))
+            .ToList();
+
+        if (ordenados.Count == 0)
+            return [];
+
+        // Normaliza para 0-1 (divide pelo maior) — apresentacao mais intuitiva, mantendo a ordem.
+        // O 1o resultado fica 1.0.
+        var maior = ordenados[0].Value;
+
+        return ordenados
+            .Select(p => new ResultadoBuscaDto(animais[p.Key], p.Value / maior))
             .ToList();
     }
 }
