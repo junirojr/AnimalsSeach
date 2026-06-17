@@ -62,7 +62,8 @@
     </div>
     <div class="meta" style="margin-top:6px">
       <span><b>FTS:</b> <code>to_tsquery</code> OR + <code>unaccent</code>; indexa nome, descrição, características, curiosidades, distribuição e tags</span>
-      <span><b>Híbrido:</b> Reciprocal Rank Fusion (k=60), peso igual</span>
+      <span><b>Híbrido:</b> Reciprocal Rank Fusion (k=60), peso igual, pontuação normalizada 0–1</span>
+      <span><b>Geração:</b> embeddings em lote (batch) — ~43s p/ 150 fragmentos</span>
     </div>
   </div>
 
@@ -76,13 +77,49 @@
       <li><span class="date">F5+</span> — Troca para <b>bge-m3 (1024 dim)</b>. PT melhor; regrediu multi-conceito ("predador dos oceanos").</li>
       <li><span class="date">F6</span> — Busca <b>Híbrida (RRF)</b> fundindo FTS + semântica. Vence quando o FTS dispara.</li>
       <li><span class="date">F6.1</span> — <b>Recall do FTS</b> (OR + unaccent + mais campos) e <b>tags contextualizadas</b>. Resgata "predador dos oceanos".</li>
+      <li><span class="date">F6.2</span> — <b>Geração em lote</b> (140s → 43s) e <b>pontuação do RRF normalizada 0–1</b>. Sem mudança de ranking.</li>
     </ul>
   </div>
 
   <!-- ====================================================================== -->
   <!-- ============== RUN: cole novos comparativos como este ================ -->
   <!-- ====================================================================== -->
-  <h2>📊 2026-06-16 — F6.1 (recall do FTS + tags contextualizadas) <span class="badge b-good">ATUAL</span></h2>
+  <!-- ===== RUN F6.2 ===== -->
+  <h2>📊 2026-06-16 — F6.2 (batch + RRF normalizado) <span class="badge b-good">ATUAL</span></h2>
+  <div class="card">
+    <div class="meta">
+      <span><b>Performance:</b> geração em lote — <b>140s → 43s</b> (~3,2× mais rápida)</span>
+      <span><b>UX:</b> pontuação do híbrido normalizada em <b>0–1</b> (1º = 1.0)</span>
+    </div>
+    <p class="verdict">Mesmo <b>ranking</b> da F6.1 (a normalização preserva a ordem) — muda só a escala do score e a
+    velocidade de indexação. Abaixo o modo <b>Híbrido</b> com os novos valores 0–1 (Textual/Semântica inalterados):</p>
+    <div class="grid">
+      <div class="mode"><h4>"tem asas" — Híbrida</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Papagaio</td><td class="score">1.0000</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Águia</td><td class="score">1.0000</td></tr>
+        <tr><td class="rank">3</td><td>Urso-polar</td><td class="score">0.4881</td></tr>
+        <tr><td class="rank">4</td><td>Elefante</td><td class="score">0.4804</td></tr></table></div>
+      <div class="mode"><h4>"predador dos oceanos" — Híbrida</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Tubarão</td><td class="score">1.0000</td></tr>
+        <tr><td class="rank">2</td><td>Leão</td><td class="score">1.0000</td></tr>
+        <tr><td class="rank">3</td><td>Lobo</td><td class="score">0.9995</td></tr>
+        <tr><td class="rank">4</td><td>Águia</td><td class="score">0.9995</td></tr></table></div>
+      <div class="mode"><h4>"animais que voam" — Híbrida</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Papagaio</td><td class="score">1.0000</td></tr>
+        <tr><td class="rank">2</td><td class="hit">Águia</td><td class="score">0.9839</td></tr>
+        <tr><td class="rank">3</td><td>Lobo</td><td class="score">0.9683</td></tr>
+        <tr><td class="rank">4</td><td>Cobra</td><td class="score">0.9531</td></tr></table></div>
+      <div class="mode"><h4>"voar" — Híbrida</h4>
+        <table><tr><td class="rank">1</td><td class="hit">Águia</td><td class="score">1.0000</td></tr>
+        <tr><td class="rank">2</td><td>Lobo</td><td class="score">0.4919</td></tr>
+        <tr><td class="rank">3</td><td>Urso-polar</td><td class="score">0.4841</td></tr>
+        <tr><td class="rank">4</td><td>Papagaio</td><td class="score">0.4766</td></tr></table></div>
+    </div>
+    <p class="verdict">Em "predador dos oceanos" os 4 primeiros ficam ~1.0 — reflete o achatamento do RRF
+    (usa posição, não magnitude); o Tubarão lidera por margem fina. Alavanca futura: RRF com peso.</p>
+  </div>
+
+  <h2>📊 2026-06-16 — F6.1 (recall do FTS + tags contextualizadas)</h2>
   <div class="card">
     <div class="meta"><span><b>Setup:</b> bge-m3 1024 · multi-vetor · tags contextualizadas · FTS OR+unaccent · RRF k=60</span></div>
     <p class="verdict">🎯 <b>Objetivo atingido:</b> o FTS voltou a disparar (indexar <code>distribuicao_geografica</code> + OR) e o
