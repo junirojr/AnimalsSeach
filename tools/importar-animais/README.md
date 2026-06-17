@@ -64,13 +64,12 @@ Gerar embeddings de ~1 000 animais no **Ollama rodando na CPU** pode levar **2�
 
 ## Idempotência
 
-A carga respeita erros por item: se um animal já existir (a API retornar 409 ou 400), o script pula e continua. Isso torna re-execuções seguras.
+A API **não** tem restrição de unicidade nem dedupe no `POST /api/animais` — reenviar o mesmo animal cria um registro **duplicado**. Para tornar a re-execução segura, a etapa de carga **pré-carrega os nomes científicos já existentes** (via `GET /api/animais` paginado) e **pula** os que já estão no banco. Itens com erro de validação (400) também são pulados, sem abortar o lote.
 
-Para rodar completamente do zero (limpar todos os dados de demo antes de re-importar), execute no banco local:
+Para um reset limpo (apagar os dados de demo antes de re-importar), execute no banco local:
 
 ```sql
-DELETE FROM animal_fragmentos;
-DELETE FROM animais;
+TRUNCATE animais CASCADE;  -- o CASCADE limpa fragmentos_animal junto
 ```
 
-> **Atenção:** esses comandos removem **todos** os animais, incluindo o seed de testes se você rodou as migrations com `dotnet ef database update`. Prefira rodar o importador em um banco separado de demo ou restaurar o seed após a limpeza (`dotnet ef database update` re-executa `DadosSementeAnimal`).
+> **Atenção:** isso remove **todos** os animais, incluindo o seed de testes. Para restaurar o seed depois: `POST /api/animais/popular` seguido de `POST /api/animais/embeddings/gerar`.

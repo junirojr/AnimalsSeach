@@ -40,15 +40,46 @@ try {
 console.log(`${animais.length} animais para carregar.\n`);
 
 // ---------------------------------------------------------------------------
+// Dedupe: pré-carrega nomes científicos já no banco (a API não tem unicidade)
+// ---------------------------------------------------------------------------
+
+const existentes = new Set();
+try {
+  let pagina = 1;
+  const tamanho = 200;
+  for (;;) {
+    const resp = await fetch(`${API_URL}/api/animais?pagina=${pagina}&tamanho=${tamanho}`);
+    if (!resp.ok) break;
+    const lote = await resp.json();
+    if (!Array.isArray(lote) || lote.length === 0) break;
+    for (const a of lote) existentes.add((a.nomeCientifico ?? '').trim().toLowerCase());
+    if (lote.length < tamanho) break;
+    pagina++;
+  }
+  console.log(`${existentes.size} animais já no banco — duplicatas serão puladas.\n`);
+} catch (err) {
+  console.warn(`Não foi possível pré-carregar existentes (${err.message}); seguindo sem dedupe.\n`);
+}
+
+// ---------------------------------------------------------------------------
 // POST /api/animais — um por vez para não saturar a API
 // ---------------------------------------------------------------------------
 
 let totalInseridos = 0;
+let totalPulados   = 0;
 let totalErros     = 0;
 
 for (let i = 0; i < animais.length; i++) {
   const animal = animais[i];
   const progresso = `[${String(i + 1).padStart(String(animais.length).length)}/${animais.length}]`;
+
+  const chave = (animal.nomeCientifico ?? '').trim().toLowerCase();
+  if (chave && existentes.has(chave)) {
+    totalPulados++;
+    console.log(`${progresso} ${animal.nomeComum} (${animal.nomeCientifico}) → pulado (já existe)`);
+    continue;
+  }
+  existentes.add(chave);
 
   try {
     const resp = await fetch(`${API_URL}/api/animais`, {
@@ -87,6 +118,7 @@ for (let i = 0; i < animais.length; i++) {
 console.log('\n=== Resultado da Carga ===');
 console.log(`Total tentados : ${animais.length}`);
 console.log(`Inseridos (201): ${totalInseridos}`);
+console.log(`Pulados (dupes): ${totalPulados}`);
 console.log(`Erros          : ${totalErros}`);
 
 // ---------------------------------------------------------------------------
