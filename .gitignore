@@ -32,6 +32,11 @@ appsettings.*.local.json
 # ---- Claude Code ----
 .claude/settings.local.json
 
+# ---- tools/importar-animais (dados gerados, nao versionar) ----
+tools/importar-animais/dados-crawl.json
+tools/importar-animais/dados-validados.json
+tools/importar-animais/rejeitados.json
+
 # ---- Sistema operacional / IDE ----
 .DS_Store
 Thumbs.db

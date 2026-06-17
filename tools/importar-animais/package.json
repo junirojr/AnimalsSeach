@@ -1,0 +1,11 @@
+{
+  "name": "importar-animais",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Dataset de DEMO para o Animalsearch - crawl Wikipedia/Wikidata",
+  "scripts": {
+    "crawl": "node 1-crawl.mjs",
+    "curadoria": "node 2-curadoria.mjs",
+    "carga": "node 3-carga.mjs"
+  }
+}
