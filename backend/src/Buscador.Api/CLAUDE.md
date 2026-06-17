@@ -18,19 +18,18 @@ POST /api/animais/popular
 POST /api/animais/embeddings/gerar
 ```
 
-> **Estado atual (pré-Fase 7):** `Program.cs` já expõe versões **mínimas** de `popular`, `buscar`,
-> listar e obter-por-id (via MediatR) para teste manual do FTS. A Fase 7 vai **formalizá-las**:
-> mover para `Endpoints/AnimalEndpoints.cs`, criar `Contracts/`, `GlobalExceptionHandler` e CORS.
+> **Estado (Fase 7 concluída):** os 5 endpoints vivem em `Endpoints/EndpointsAnimais.cs` (extensão
+> `MapearEndpointsAnimais`), chamada pelo `Program.cs` (só wiring). Tratamento de erro global, validação
+> (q vazio → 400), Scalar e CORS (origem em `Cors:AllowedOrigin`, default `localhost:3000`) já habilitados.
 
 ## Estrutura de pastas
 ```
 Endpoints/
-  AnimalEndpoints.cs   → extensão MapAnimalEndpoints(this WebApplication app)
-Contracts/             → requests/responses HTTP (se diferirem dos DTOs da Application)
-ExceptionHandling/
-  GlobalExceptionHandler.cs  → IExceptionHandler (ValidationException→400, resto→500)
-Program.cs             → wiring: AddApplication, AddInfrastructure, MapAnimalEndpoints
-appsettings.json       → ConnectionStrings:Postgres, Ollama:BaseUrl, Cors:AllowedOrigin
+  EndpointsAnimais.cs   → extensão MapearEndpointsAnimais(this WebApplication app)
+TratamentoErros/
+  ManipuladorGlobalExcecoes.cs  → IExceptionHandler (ValidationException→400, resto→500)
+Program.cs              → wiring: AdicionarAplicacao, AdicionarInfraestrutura, CORS, MapearEndpointsAnimais
+appsettings.json        → ConnectionStrings:Postgres, Ollama:BaseUrl, Cors:AllowedOrigin
 ```
 
 ## Scalar (OpenAPI)
@@ -38,6 +37,6 @@ appsettings.json       → ConnectionStrings:Postgres, Ollama:BaseUrl, Cors:Allo
 - UI disponível em `/scalar` quando a Api está rodando
 
 ## Tratamento de erros
-- `GlobalExceptionHandler` com `IExceptionHandler`
+- `ManipuladorGlobalExcecoes` com `IExceptionHandler`
 - `ValidationException` do FluentValidation → HTTP 400 com detalhes
 - Exceções não tratadas → HTTP 500 com ProblemDetails
