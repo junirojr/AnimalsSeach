@@ -29,13 +29,13 @@ dotnet run --project src/Buscador.Api
 **3. Ressemear os animais:**
 
 ```bash
-curl -X POST http://localhost:5000/api/animais/popular
+curl -X POST http://localhost:5024/api/animais/popular
 ```
 
 **4. Regenerar os embeddings:**
 
 ```bash
-curl -X POST http://localhost:5000/api/animais/embeddings/gerar
+curl -X POST http://localhost:5024/api/animais/embeddings/gerar
 ```
 
 A geracao de embeddings usa o modelo `bge-m3` via Ollama e pode levar varios minutos.
@@ -71,8 +71,8 @@ dotnet ef database update --no-build --project src/Buscador.Infrastructure --sta
 
 ```bash
 dotnet run --project src/Buscador.Api
-curl -X POST http://localhost:5000/api/animais/popular
-curl -X POST http://localhost:5000/api/animais/embeddings/gerar
+curl -X POST http://localhost:5024/api/animais/popular
+curl -X POST http://localhost:5024/api/animais/embeddings/gerar
 ```
 
 ---
@@ -94,5 +94,5 @@ Os registros da tabela `animais` sao mantidos intactos.
 ```bash
 cd backend
 dotnet run --project src/Buscador.Api
-curl -X POST http://localhost:5000/api/animais/embeddings/gerar
+curl -X POST http://localhost:5024/api/animais/embeddings/gerar
 ```

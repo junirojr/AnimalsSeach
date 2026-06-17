@@ -91,7 +91,7 @@ docker exec postgres psql -U buscador -d buscador -c "TRUNCATE animais CASCADE;"
 dotnet run --project src/Buscador.Api
 
 # Chamar o endpoint de semente
-curl -X POST http://localhost:5000/api/animais/popular
+curl -X POST http://localhost:5024/api/animais/popular
 ```
 
 ---
@@ -101,7 +101,7 @@ curl -X POST http://localhost:5000/api/animais/popular
 Apos popular o banco, gere os embeddings semanticos para o novo animal:
 
 ```bash
-curl -X POST http://localhost:5000/api/animais/embeddings/gerar
+curl -X POST http://localhost:5024/api/animais/embeddings/gerar
 ```
 
 Este passo utiliza o modelo `bge-m3` via Ollama e pode levar alguns minutos dependendo do numero de animais e do hardware disponivel.

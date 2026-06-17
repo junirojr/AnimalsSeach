@@ -1,6 +1,6 @@
 # Referência — Endpoints da API
 
-Base URL (desenvolvimento): `http://localhost:5000`
+Base URL (desenvolvimento): `http://localhost:5024`
 
 ---
 
