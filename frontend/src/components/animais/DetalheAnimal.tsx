@@ -20,11 +20,11 @@ interface SecaoProps {
 
 function Secao({ titulo, texto }: SecaoProps) {
   return (
-    <section className="mt-4">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+    <section className="mt-5">
+      <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: "#6b9690" }}>
         {titulo}
       </h3>
-      <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-gray-700">
+      <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed" style={{ color: "#b8d4d0" }}>
         {texto}
       </p>
     </section>
@@ -64,11 +64,17 @@ export function DetalheAnimal({ animal, aoFechar }: DetalheAnimalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+      style={{ background: "rgba(0,0,0,0.75)" }}
       onClick={aoFechar}
     >
       <div
-        className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
+        className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl p-6"
+        style={{
+          background: "#0d1f1e",
+          border: "1px solid #1a3330",
+          boxShadow: "0 25px 50px rgba(0,0,0,0.6)",
+        }}
         role="dialog"
         aria-modal="true"
         onClick={(evento) => evento.stopPropagation()}
@@ -77,30 +83,36 @@ export function DetalheAnimal({ animal, aoFechar }: DetalheAnimalProps) {
           type="button"
           aria-label="Fechar"
           onClick={aoFechar}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#00e5cc]"
+          style={{ color: "#6b9690", border: "1px solid #1a3330" }}
         >
-          <span aria-hidden="true" className="text-lg leading-none">
-            ×
-          </span>
+          <span aria-hidden="true" className="leading-none">×</span>
         </button>
 
         <header className="pr-10">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {animal.nomeComum}
-          </h2>
-          <p className="text-base italic text-gray-500">
+          <h2 className="text-2xl font-bold text-white">{animal.nomeComum}</h2>
+          <p className="text-sm italic" style={{ color: "#6b9690" }}>
             {animal.nomeCientifico}
           </p>
         </header>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800">
+          <span
+            className="rounded-full px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider"
+            style={{ background: "rgba(0,229,204,0.08)", border: "1px solid rgba(0,229,204,0.2)", color: "#00e5cc" }}
+          >
             {rotuloHabitat}
           </span>
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+          <span
+            className="rounded-full px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider"
+            style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)", color: "#fbbf24" }}
+          >
             {rotuloDieta}
           </span>
-          <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-medium text-rose-800">
+          <span
+            className="rounded-full px-3 py-1 font-mono text-xs font-semibold uppercase tracking-wider"
+            style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171" }}
+          >
             {rotuloStatus}
           </span>
         </div>
@@ -114,11 +126,12 @@ export function DetalheAnimal({ animal, aoFechar }: DetalheAnimalProps) {
         />
 
         {temTags && (
-          <div className="mt-6 flex flex-wrap gap-1.5 border-t border-gray-100 pt-4">
+          <div className="mt-6 flex flex-wrap gap-1.5 pt-4" style={{ borderTop: "1px solid #1a3330" }}>
             {animal.tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
+                className="rounded-full px-2.5 py-0.5 text-xs"
+                style={{ background: "#122624", border: "1px solid #1a3330", color: "#6b9690" }}
               >
                 {tag}
               </span>

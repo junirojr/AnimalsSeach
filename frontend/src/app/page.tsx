@@ -7,96 +7,105 @@ import BarraBusca from "@/components/busca/BarraBusca";
 import AlternadorModo from "@/components/busca/AlternadorModo";
 import { CartaoAnimal } from "@/components/animais/CartaoAnimal";
 import { DetalheAnimal } from "@/components/animais/DetalheAnimal";
+import LogoAnimalsearch from "@/components/logo/LogoAnimalsearch";
 import { buscarAnimais } from "@/services/animais";
 import type { Animal, ModoBusca, ResultadoBusca } from "@/types/animal";
 
+function SecaoHero() {
+  return (
+    <div className="flex flex-col items-center gap-6 px-4 pb-8 pt-10 text-center">
+      <div
+        className="flex items-center justify-center"
+        style={{ animation: "girar-lento 30s linear infinite" }}
+      >
+        <LogoAnimalsearch size={112} />
+      </div>
+
+      <div>
+        <h1 className="text-4xl font-bold tracking-tight text-white">Animalsearch</h1>
+        <p className="mt-2 text-sm leading-relaxed" style={{ color: "#6b9690" }}>
+          Busca híbrida sobre um catálogo de animais.<br />
+          Textual, semântica e por similaridade vetorial.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [termo, setTermo] = useState("");
-  const [modo, setModo] = useState<ModoBusca>("Textual");
+  const [modo, setModo] = useState<ModoBusca>("Hibrida");
   const [animalSelecionado, setAnimalSelecionado] = useState<Animal | null>(null);
 
   const termoLimpo = termo.trim();
   const habilitado = termoLimpo.length > 0;
 
   const { data, isLoading, isError, error } = useQuery<ResultadoBusca[]>({
-    queryKey: ["busca", termo, modo],
-    queryFn: () => buscarAnimais(termo, modo),
+    queryKey: ["busca", termoLimpo, modo],
+    queryFn: () => buscarAnimais(termoLimpo, modo),
     enabled: habilitado,
   });
 
-  function renderizarResultados() {
-    if (!habilitado) {
-      return (
-        <p className="text-center text-zinc-500 dark:text-zinc-400">
-          Digite algo para comecar a buscar.
-        </p>
-      );
-    }
-
-    if (isLoading) {
-      return (
-        <p className="text-center text-zinc-500 dark:text-zinc-400">
-          Buscando...
-        </p>
-      );
-    }
-
-    if (isError) {
-      return (
-        <p className="text-center text-red-600 dark:text-red-400">
-          {(error as Error).message}
-        </p>
-      );
-    }
-
-    const resultados = data ?? [];
-
-    if (resultados.length === 0) {
-      return (
-        <p className="text-center text-zinc-500 dark:text-zinc-400">
-          Nenhum animal encontrado para &quot;{termo}&quot;.
-        </p>
-      );
-    }
-
-    return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {resultados.map((r) => (
-          <CartaoAnimal
-            key={r.animal.id}
-            animal={r.animal}
-            pontuacao={r.pontuacao}
-            aoClicar={setAnimalSelecionado}
-          />
-        ))}
-      </div>
-    );
-  }
+  const resultados = data ?? [];
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-12 sm:px-6 lg:px-8">
-        <header className="flex flex-col items-center gap-2 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Animalsearch
-          </h1>
-          <p className="text-lg text-zinc-600 dark:text-zinc-400">
-            Busca híbrida de animais
-          </p>
-        </header>
+    <>
+      <div className="mx-auto w-full max-w-2xl px-4">
+        {!habilitado && <SecaoHero />}
 
-        <section className="flex flex-col items-center gap-4">
+        <div className={`flex flex-col gap-3 ${habilitado ? "pt-6" : ""}`}>
           <BarraBusca aoBuscar={setTermo} />
           <AlternadorModo modo={modo} aoTrocarModo={setModo} />
-        </section>
+        </div>
 
-        <section>{renderizarResultados()}</section>
-      </main>
+        {habilitado && (
+          <div className="mt-6">
+            {isLoading && (
+              <p className="py-12 text-center text-sm" style={{ color: "#6b9690" }}>
+                Buscando...
+              </p>
+            )}
+
+            {isError && (
+              <p className="py-12 text-center text-sm text-red-400">
+                {(error as Error).message}
+              </p>
+            )}
+
+            {!isLoading && !isError && (
+              <>
+                <div className="mb-4 px-1 text-xs" style={{ color: "#6b9690" }}>
+                  <span className="font-mono uppercase tracking-widest">
+                    {resultados.length} resultado{resultados.length !== 1 ? "s" : ""} encontrado{resultados.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+
+                {resultados.length === 0 ? (
+                  <p className="py-12 text-center text-sm" style={{ color: "#6b9690" }}>
+                    Nenhum animal encontrado para &quot;{termo}&quot;.
+                  </p>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {resultados.map((r) => (
+                      <CartaoAnimal
+                        key={r.animal.id}
+                        animal={r.animal}
+                        pontuacao={r.pontuacao}
+                        aoClicar={setAnimalSelecionado}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       <DetalheAnimal
         animal={animalSelecionado}
         aoFechar={() => setAnimalSelecionado(null)}
       />
-    </div>
+    </>
   );
 }

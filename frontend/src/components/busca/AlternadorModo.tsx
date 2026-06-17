@@ -7,30 +7,52 @@ interface AlternadorModoProps {
   aoTrocarModo: (modo: ModoBusca) => void;
 }
 
-const modos: { valor: ModoBusca; rotulo: string }[] = [
-  { valor: "Textual", rotulo: "Textual" },
-  { valor: "Semantica", rotulo: "Semântica" },
-  { valor: "Hibrida", rotulo: "Híbrida" },
+const modos: { valor: ModoBusca; abrev: string }[] = [
+  { valor: "Hibrida", abrev: "HÍBRIDA" },
+  { valor: "Textual", abrev: "FTS" },
+  { valor: "Semantica", abrev: "SEMÂNTICA" },
 ];
 
 export default function AlternadorModo({ modo, aoTrocarModo }: AlternadorModoProps) {
   return (
-    <div className="inline-flex divide-x divide-gray-300 overflow-hidden rounded-lg border border-gray-300">
+    <div className="flex items-center gap-2">
       {modos.map((item) => {
         const ativo = item.valor === modo;
-        const classesAtivo = "bg-blue-600 text-white";
-        const classesInativo = "bg-white text-gray-700 hover:bg-gray-100";
-        const classes = ativo ? classesAtivo : classesInativo;
+
+        if (ativo) {
+          return (
+            <button
+              key={item.valor}
+              type="button"
+              aria-pressed
+              onClick={() => aoTrocarModo(item.valor)}
+              className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold tracking-wider"
+              style={{
+                background: "rgba(0,229,204,0.12)",
+                border: "1px solid #00e5cc",
+                color: "#00e5cc",
+              }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#00e5cc" }} />
+              MODO: {item.abrev}
+            </button>
+          );
+        }
 
         return (
           <button
             key={item.valor}
             type="button"
-            aria-pressed={ativo}
+            aria-pressed={false}
             onClick={() => aoTrocarModo(item.valor)}
-            className={`px-4 py-2 text-sm font-medium transition ${classes}`}
+            className="rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide transition-colors"
+            style={{
+              background: "#0d1f1e",
+              border: "1px solid #1a3330",
+              color: "#6b9690",
+            }}
           >
-            {item.rotulo}
+            {item.abrev}
           </button>
         );
       })}
