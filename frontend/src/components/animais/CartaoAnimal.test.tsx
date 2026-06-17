@@ -8,10 +8,10 @@ const animalFake: Animal = {
   nomeCientifico: "Panthera onca",
   descricao: "Maior felino das Americas.",
   caracteristicas: "Pelagem amarelada com rosetas.",
-  dieta: 0,
-  habitat: 0,
+  dieta: "Carnivoro",
+  habitat: "Floresta",
   distribuicaoGeografica: "America do Sul",
-  statusConservacao: 2,
+  statusConservacao: "Vulneravel",
   tags: ["felino"],
   curiosidades: "Mordida muito forte.",
 };
@@ -21,7 +21,7 @@ describe("CartaoAnimal", () => {
     render(<CartaoAnimal animal={animalFake} />);
 
     expect(screen.getByText("Onca-pintada")).toBeInTheDocument();
-    expect(screen.getByText("Floresta")).toBeInTheDocument();
-    expect(screen.getByText("Carnivoro")).toBeInTheDocument();
+    expect(screen.getByText(/Floresta/)).toBeInTheDocument();
+    expect(screen.getByText(/Carnívoro/)).toBeInTheDocument();
   });
 });

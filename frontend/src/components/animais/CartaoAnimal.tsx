@@ -8,6 +8,16 @@ interface CartaoAnimalProps {
   aoClicar?: (animal: Animal) => void;
 }
 
+const gradientesHabitat: Record<string, [string, string]> = {
+  Floresta: ["#0a3020", "#1a5a35"],
+  Oceano: ["#041830", "#0a3a5a"],
+  Deserto: ["#301a04", "#5a3010"],
+  Savana: ["#2e2004", "#4a3508"],
+  Montanha: ["#181828", "#2e2e48"],
+  AguaDoce: ["#041e2e", "#0a3848"],
+  Polar: ["#182038", "#28385a"],
+};
+
 function formatarPontuacao(pontuacao: number): string {
   if (pontuacao >= 0 && pontuacao <= 1) {
     return `${Math.round(pontuacao * 100)}%`;
@@ -18,71 +28,85 @@ function formatarPontuacao(pontuacao: number): string {
 
 export function CartaoAnimal({ animal, pontuacao, aoClicar }: CartaoAnimalProps) {
   const ehClicavel = aoClicar !== undefined;
-  const temTags = animal.tags.length > 0;
   const exibirPontuacao = pontuacao !== undefined;
 
   const rotuloHabitat = rotulosHabitat[animal.habitat] ?? "—";
   const rotuloDieta = rotulosDieta[animal.dieta] ?? "—";
+  const [corA, corB] = gradientesHabitat[animal.habitat] ?? ["#0d1f1e", "#162c2a"];
+  const [genero] = animal.nomeCientifico.split(" ");
 
   function aoPressionarTecla(evento: KeyboardEvent<HTMLDivElement>) {
-    if (!ehClicavel) {
-      return;
-    }
-
-    if (evento.key !== "Enter" && evento.key !== " ") {
-      return;
-    }
-
+    if (!ehClicavel || (evento.key !== "Enter" && evento.key !== " ")) return;
     evento.preventDefault();
     aoClicar?.(animal);
   }
 
-  const classesBase =
-    "relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition";
-  const classesClicavel = ehClicavel
-    ? "cursor-pointer hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-400"
-    : "";
-
   return (
     <div
-      className={`${classesBase} ${classesClicavel}`}
+      className={`overflow-hidden rounded-2xl transition-transform ${ehClicavel ? "cursor-pointer hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#00e5cc]" : ""}`}
+      style={{ background: "#0d1f1e", border: "1px solid #1a3330" }}
       role={ehClicavel ? "button" : undefined}
       tabIndex={ehClicavel ? 0 : undefined}
       onClick={() => aoClicar?.(animal)}
       onKeyDown={aoPressionarTecla}
     >
-      {exibirPontuacao && (
-        <span className="absolute right-3 top-3 text-xs text-gray-500">
-          {formatarPontuacao(pontuacao)}
+      {/* Área visual com gradiente por habitat */}
+      <div
+        className="relative flex h-44 items-end overflow-hidden"
+        style={{ background: `linear-gradient(135deg, ${corA} 0%, ${corB} 100%)` }}
+      >
+        <span
+          className="pointer-events-none absolute inset-0 flex select-none items-center justify-center font-bold italic"
+          style={{ color: "rgba(255,255,255,0.04)", fontSize: "90px", lineHeight: 1 }}
+          aria-hidden
+        >
+          {genero}
         </span>
-      )}
 
-      <h3 className="pr-12 text-lg font-semibold text-gray-900">
-        {animal.nomeComum}
-      </h3>
-      <p className="text-sm italic text-gray-500">{animal.nomeCientifico}</p>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
-          {rotuloHabitat}
-        </span>
-        <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
-          {rotuloDieta}
-        </span>
+        {exibirPontuacao && (
+          <span
+            className="absolute right-3 top-3 rounded-full px-2.5 py-1 text-xs font-bold"
+            style={{ background: "#00e5cc", color: "#091716" }}
+          >
+            {formatarPontuacao(pontuacao)} Match
+          </span>
+        )}
       </div>
 
-      {temTags && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {animal.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
-            >
-              {tag}
-            </span>
-          ))}
+      {/* Conteúdo */}
+      <div className="p-4">
+        <div>
+          <h3 className="truncate text-base font-bold text-white">
+            {animal.nomeComum}
+          </h3>
+          <p className="truncate text-xs italic" style={{ color: "#6b9690" }}>
+            {animal.nomeCientifico}
+          </p>
         </div>
-      )}
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <span
+            className="rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider"
+            style={{
+              background: "rgba(0,229,204,0.08)",
+              border: "1px solid rgba(0,229,204,0.2)",
+              color: "#00e5cc",
+            }}
+          >
+            Habitat: {rotuloHabitat}
+          </span>
+          <span
+            className="rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider"
+            style={{
+              background: "rgba(251,191,36,0.08)",
+              border: "1px solid rgba(251,191,36,0.2)",
+              color: "#fbbf24",
+            }}
+          >
+            Dieta: {rotuloDieta}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

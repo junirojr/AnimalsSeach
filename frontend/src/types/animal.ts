@@ -6,10 +6,10 @@ export interface Animal {
   nomeCientifico: string;
   descricao: string;
   caracteristicas: string;
-  dieta: number;
-  habitat: number;
+  dieta: string;
+  habitat: string;
   distribuicaoGeografica: string;
-  statusConservacao: number;
+  statusConservacao: string;
   tags: string[];
   curiosidades: string;
 }
@@ -19,30 +19,29 @@ export interface ResultadoBusca {
   pontuacao: number;
 }
 
-// Mapas int -> rotulo PT, derivados dos enums do Domain (.NET). A ordem dos indices
-// segue EXATAMENTE a ordem de declaracao dos enums em backend/src/Buscador.Domain/Animais/.
-export const rotulosDieta: Record<number, string> = {
-  0: "Carnivoro",
-  1: "Herbivoro",
-  2: "Onivoro",
+// Mapas nome-enum -> rotulo PT exibivel. Chaves = valores exatos que a API serializa (JsonStringEnumConverter).
+export const rotulosDieta: Record<string, string> = {
+  Carnivoro: "Carnívoro",
+  Herbivoro: "Herbívoro",
+  Onivoro: "Onívoro",
 };
 
-export const rotulosHabitat: Record<number, string> = {
-  0: "Floresta",
-  1: "Oceano",
-  2: "Deserto",
-  3: "Savana",
-  4: "Montanha",
-  5: "Agua doce",
-  6: "Polar",
+export const rotulosHabitat: Record<string, string> = {
+  Floresta: "Floresta",
+  Oceano: "Oceano",
+  Deserto: "Deserto",
+  Savana: "Savana",
+  Montanha: "Montanha",
+  AguaDoce: "Água doce",
+  Polar: "Polar",
 };
 
-export const rotulosStatusConservacao: Record<number, string> = {
-  0: "Pouco preocupante",
-  1: "Quase ameacado",
-  2: "Vulneravel",
-  3: "Em perigo",
-  4: "Criticamente em perigo",
-  5: "Extinto na natureza",
-  6: "Extinto",
+export const rotulosStatusConservacao: Record<string, string> = {
+  PoucoPreocupante: "Pouco preocupante",
+  QuaseAmeacado: "Quase ameaçado",
+  Vulneravel: "Vulnerável",
+  EmPerigo: "Em perigo",
+  CriticamenteEmPerigo: "Criticamente em perigo",
+  ExtintoNaNatureza: "Extinto na natureza",
+  Extinto: "Extinto",
 };
