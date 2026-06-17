@@ -117,7 +117,13 @@ Usar **shadow properties** mapeadas via Fluent API em `AnimalConfiguration.cs`:
   3. **Modelo multilíngue** (ex.: `multilingual-e5-large`): maior impacto no PT, maior custo/risco; só
      se 1+2 não bastarem.
 
-### ⚠️ `GerarEmbeddingsComandoManipulador` está na Infrastructure (decisão pendente)
+### ✅ `GerarEmbeddingsComandoManipulador` movido para a Application (RESOLVIDO — higiene)
+> **Decisão tomada:** refatorar. O handler foi movido para `Application/Funcionalidades/GerarEmbeddings/`,
+> com o acesso ao banco abstraído em `IServicoPersistenciaFragmentos` (Application) implementada por
+> `ServicoPersistenciaFragmentos` (Infrastructure, SQL cru). O `AddMediatR` da Infra foi removido (sem mais
+> handlers lá). Todos os handlers voltam a viver na Application. Histórico do dilema original abaixo.
+
+#### (histórico) ⚠️ `GerarEmbeddingsComandoManipulador` estava na Infrastructure (decisão pendente)
 - **Estado real:** o comando `GerarEmbeddingsComando` está na Application, mas seu **handler** está em
   `Infrastructure/Embeddings/` (porque usa `ContextoBanco`/SQL cru). A Infrastructure passou a registrar
   MediatR do próprio assembly — por isso funciona em runtime. **A regra de dependência NÃO é violada**
@@ -203,8 +209,9 @@ O RRF está correto; ele só não tem o que fundir quando o FTS não dispara. O 
 3. **[F6.2] Geração em lote**: o handler cria um `OllamaEmbeddingGenerator` por fragmento e chama 1 a 1 →
    reusar instância + `GenerateAsync` em lote corta o tempo (bge-m3 é lento). Custo: refactor pequeno.
 4. **[F6.2] Normalizar pontuação do RRF** (0–1) no DTO — problema de apresentação, resolver na borda.
-5. **Higiene (baixa urgência)**: mover handler de `GerarEmbeddings` p/ Application (via `IServicoPersistenciaEmbedding`);
-   remover o parâmetro `TipoTextoEmbedding` morto quando a escolha de modelo estabilizar.
+5. **Higiene** — ✅ APLICADA: handler `GerarEmbeddings` movido p/ Application (via `IServicoPersistenciaFragmentos`);
+   `TipoTextoEmbedding` morto removido; pipeline de validação (`ComportamentoValidacao`) + `ManipuladorGlobalExcecoes`
+   (q vazio → 400); EF Core alinhado em 10.0.9 (MSB3277); linha órfã de migration removida do DEV.
 
 ### Não fazer agora
 Trocar de modelo de novo (bge-m3 cobre o que falta via híbrido) e tunar pesos do RRF (sem evidência de que peso
