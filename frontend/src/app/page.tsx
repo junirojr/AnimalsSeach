@@ -78,7 +78,7 @@ export default function Home() {
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-12 sm:px-6 lg:px-8">
         <header className="flex flex-col items-center gap-2 text-center">
           <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Deep Sparrow
+            Animalsearch
           </h1>
           <p className="text-lg text-zinc-600 dark:text-zinc-400">
             Busca híbrida de animais

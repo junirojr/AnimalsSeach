@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Deep Sparrow — Buscador de Animais",
+  title: "Animalsearch — Buscador de Animais",
   description: "Busca hibrida (textual, semantica e hibrida) sobre um catalogo de animais",
 };
 

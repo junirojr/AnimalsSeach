@@ -5,7 +5,7 @@ test.describe("Busca de animais", () => {
     await page.goto("/");
 
     await expect(
-      page.getByRole("heading", { name: "Deep Sparrow" }),
+      page.getByRole("heading", { name: "Animalsearch" }),
     ).toBeVisible();
 
     const campoBusca = page.getByLabel("Buscar animais");

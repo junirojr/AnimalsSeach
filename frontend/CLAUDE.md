@@ -1,4 +1,4 @@
-# Frontend — Buscador (Deep Sparrow)
+# Frontend — Buscador (Animalsearch)
 
 ## Stack
 - **Framework**: Next.js 16 (App Router)
