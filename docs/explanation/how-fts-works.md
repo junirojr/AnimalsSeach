@@ -28,11 +28,19 @@ Perceba que:
 - "caça" virou `'caç'` — raiz compartilhada com "caçar", "caçador", "caçando".
 - O número depois de cada lexema (`:3`, `:4`...) é a **posição** da palavra no texto original, usado para cálculos de relevância.
 
-No projeto Buscador, a coluna `search_vector` de cada animal armazena exatamente esse `tsvector`, combinando nome comum, descrição, características e curiosidades:
+No projeto Buscador, a coluna `search_vector` de cada animal armazena exatamente esse `tsvector`, combinando os campos textuais e aplicando `unaccent` (para a busca ignorar acentos):
 
 ```sql
-to_tsvector('portuguese', nome_comum || ' ' || descricao || ' ' || caracteristicas || ' ' || curiosidades)
+to_tsvector('portuguese', unaccent(
+  nome_comum || ' ' || nome_cientifico || ' ' || descricao || ' ' ||
+  caracteristicas || ' ' || curiosidades || ' ' ||
+  distribuicao_geografica || ' ' || array_to_string(tags, ' ')
+))
 ```
+
+> **Recall:** indexamos **todos** os campos relevantes — inclusive `distribuicao_geografica` (onde está,
+> p. ex., "oceanos") e as `tags`. Indexar de menos faz o FTS "não achar" termos que existem nos dados;
+> foi o que segurava o modo Híbrido em consultas como "predador dos oceanos" (ver `how-embeddings-work.md`).
 
 ---
 
@@ -84,6 +92,12 @@ ORDER BY relevancia DESC;
 
 O `ts_rank` retorna um número `float` entre 0 e 1. Quanto mais vezes o termo aparece no documento, e quanto mais próximo do início ele estiver, maior a pontuação. Isso garante que um animal cuja descrição menciona "predador" seis vezes apareça antes de um que menciona a palavra apenas uma vez.
 
+> **Como o `ServicoBuscaTextual` monta a consulta:** ele sanitiza a entrada, junta os termos com **OR**
+> (`predador | oceanos`) e envolve com `unaccent`. O OR maximiza a *recall* (acha quem casa **qualquer**
+> termo) sem perder precisão, porque o `ts_rank` já ordena na frente quem casa **mais** termos — e, no modo
+> Híbrido, o RRF reordena por cima. Por isso "predador dos oceanos" passou a achar o Tubarão (casa "oceanos"),
+> em vez de voltar vazio como acontecia com a semântica de AND.
+
 ---
 
 ## O trigger — manutenção automática
@@ -107,7 +121,7 @@ Mesmo com o `@@` funcionando corretamente, sem um índice o PostgreSQL precisari
 O índice **GIN** (*Generalized Inverted Index*) resolve isso. Ele cria uma estrutura de dados que mapeia cada lexema para a lista de linhas que o contêm — o conceito é o mesmo de um índice remissivo no final de um livro, onde cada palavra aponta para as páginas em que aparece.
 
 ```sql
-CREATE INDEX idx_animais_search_vector ON animais USING GIN(search_vector);
+CREATE INDEX ix_animais_search_vector ON animais USING GIN(search_vector);
 ```
 
 Com o GIN, a busca passa de **O(n)** — varredura de todas as linhas — para **O(log n)** — navegação pela árvore do índice. Na prática, a diferença é de segundos para milissegundos em tabelas grandes.
@@ -122,6 +136,8 @@ A FTS com `tsvector`/`tsquery` é poderosa, mas tem limites que vale conhecer:
 
 2. **Dependente do dicionário de idioma.** O dicionário `'portuguese'` define quais palavras são stop words e como cada raiz é calculada. Um texto misturado com termos em inglês ou latim (nomes científicos, por exemplo) pode não ser indexado ou buscado corretamente sem configuração adicional.
 
-3. **Sem tolerância a erros ortográficos.** Se o usuário digitar "leãoo" ou "caçadoor", a busca não retornará resultados. O FTS nativo do PostgreSQL não implementa busca aproximada nem correção ortográfica.
+3. **Sem tolerância a erros ortográficos.** O `unaccent` resolve o caso de acento ("leao" acha "leão"), mas se o usuário digitar "leãoo" ou "caçadoor", a busca não retorna resultados. O FTS nativo do PostgreSQL não implementa busca aproximada nem correção ortográfica.
 
-Essas limitações são exatamente o que a **Fase 5 — Busca Semântica** do projeto vai complementar. Em vez de comparar radicais, a busca semântica converte o texto em vetores numéricos (embeddings) usando o modelo `nomic-embed-text` via Ollama, e usa o `pgvector` para encontrar animais semanticamente próximos — mesmo que as palavras exatas não coincidam.
+4. **Stemming preso ao dicionário.** O dicionário `portuguese` colapsa flexões pela raiz, mas nem sempre como esperamos — ex.: "voam" e "voar" caem em radicais diferentes, então buscar "voam" pode não achar quem só tem "voar".
+
+A **busca semântica** (embeddings, ver `how-embeddings-work.md`) complementa a FTS no que falta: em vez de comparar radicais, converte o texto em vetores via `bge-m3` no Ollama e usa o `pgvector` para achar animais semanticamente próximos — mesmo sem coincidência de palavras. E o **modo Híbrido** funde os dois (FTS + semântica) por *Reciprocal Rank Fusion*, ficando com o melhor de cada: a FTS ancora a palavra literal e a semântica entra para o conceito.
