@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Deep Sparrow — Fase 8: Frontend Next.js (passo a passo)</title>
+<style>
+  :root {
+    --azul: #2563eb;
+    --azul-escuro: #1e3a8a;
+    --verde: #059669;
+    --cinza-fundo: #f4f5f7;
+    --cinza-borda: #e2e5ea;
+    --cinza-texto: #4b5563;
+    --tinta: #111827;
+    --amarelo: #b45309;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--tinta);
+    background: var(--cinza-fundo);
+    line-height: 1.6;
+  }
+  header.capa {
+    background: linear-gradient(135deg, var(--azul-escuro), var(--azul));
+    color: #fff;
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+  }
+  header.capa h1 { margin: 0 0 .4rem; font-size: 2.1rem; letter-spacing: -.5px; }
+  header.capa p { margin: .2rem 0; opacity: .92; }
+  header.capa .tags { margin-top: 1rem; display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; }
+  header.capa .tags span {
+    background: rgba(255,255,255,.16);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 999px; padding: .25rem .8rem; font-size: .8rem;
+  }
+  main { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  section.card {
+    background: #fff; border: 1px solid var(--cinza-borda); border-radius: 14px;
+    padding: 1.5rem 1.75rem; margin-bottom: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  }
+  h2 { margin-top: 0; font-size: 1.45rem; color: var(--azul-escuro); }
+  h3 { color: var(--tinta); margin-bottom: .4rem; }
+  .etapa-titulo { display: flex; align-items: center; gap: .7rem; }
+  .badge-etapa {
+    background: var(--azul); color: #fff; font-size: .78rem; font-weight: 700;
+    border-radius: 8px; padding: .25rem .6rem; white-space: nowrap;
+  }
+  .objetivo { color: var(--cinza-texto); font-style: italic; margin-top: -.2rem; }
+  code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+  code.inline { background: #eef1f6; padding: .1rem .35rem; border-radius: 5px; font-size: .88em; color: #b91c6b; }
+  pre {
+    background: #0f172a; color: #e2e8f0; padding: 1rem 1.1rem; border-radius: 10px;
+    overflow-x: auto; font-size: .82rem; line-height: 1.5;
+  }
+  pre .cmt { color: #7c8aa5; }
+  pre .key { color: #7dd3fc; }
+  pre .str { color: #bef264; }
+  ul { margin: .4rem 0 .6rem; padding-left: 1.3rem; }
+  li { margin: .2rem 0; }
+  .arquivos { list-style: none; padding-left: 0; }
+  .arquivos li { padding: .15rem 0; }
+  .arquivos li::before { content: "📄 "; }
+  .commit {
+    display: inline-block; background: #ecfdf5; color: var(--verde);
+    border: 1px solid #a7f3d0; border-radius: 8px; padding: .25rem .7rem;
+    font-family: monospace; font-size: .82rem; margin-top: .5rem;
+  }
+  .nota {
+    border-left: 4px solid var(--amarelo); background: #fffbeb;
+    padding: .7rem 1rem; border-radius: 0 8px 8px 0; margin: .8rem 0; font-size: .92rem;
+  }
+  .nota strong { color: var(--amarelo); }
+  .ok { color: var(--verde); font-weight: 600; }
+  table { border-collapse: collapse; width: 100%; margin: .6rem 0; font-size: .9rem; }
+  th, td { border: 1px solid var(--cinza-borda); padding: .5rem .7rem; text-align: left; }
+  th { background: #f8fafc; }
+  .fluxo {
+    display: flex; flex-wrap: wrap; align-items: center; gap: .5rem;
+    background: #f8fafc; border: 1px dashed var(--cinza-borda); border-radius: 10px;
+    padding: 1rem; font-size: .85rem; justify-content: center;
+  }
+  .fluxo .box { background: #fff; border: 1px solid var(--cinza-borda); border-radius: 8px; padding: .4rem .7rem; }
+  .fluxo .seta { color: var(--azul); font-weight: 700; }
+  footer { text-align: center; color: var(--cinza-texto); font-size: .85rem; padding: 1rem 0 2rem; }
+  .toc { columns: 2; column-gap: 2rem; }
+  @media (max-width: 600px) { .toc { columns: 1; } }
+  a { color: var(--azul); }
+</style>
+</head>
+<body>
+<header class="capa">
+  <h1>🐦 Deep Sparrow — Fase 8</h1>
+  <p><strong>Frontend Next.js</strong> da UI de busca híbrida de animais</p>
+  <p>Consome a API .NET nos 3 modos: <em>Textual</em>, <em>Semântica</em> e <em>Híbrida</em></p>
+  <div class="tags">
+    <span>Next.js 16 (App Router)</span>
+    <span>TypeScript</span>
+    <span>Tailwind CSS v4</span>
+    <span>TanStack Query</span>
+    <span>Jest + RTL + MSW</span>
+    <span>Playwright</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>Visão geral</h2>
+    <p>
+      A Fase 8 construiu toda a interface de busca que conversa com a API .NET (Minimal API)
+      desenvolvida nas fases anteriores. O trabalho foi feito por um <strong>orquestrador</strong>
+      que delegou cada edição de arquivo a subagentes especializados, validando cada etapa com
+      <code class="inline">npm run build</code> (e <code class="inline">npm test</code> quando havia testes)
+      antes de criar o commit correspondente.
+    </p>
+    <p>Foram <strong>7 etapas</strong>, cada uma com seu commit semântico (Conventional Commits):</p>
+    <ol>
+      <li><strong>T8.1</strong> — TanStack Query + variável de ambiente da API</li>
+      <li><strong>T8.2</strong> — Tipos TypeScript + serviço de acesso à API</li>
+      <li><strong>T8.3</strong> — Componentes <em>BarraBusca</em> e <em>AlternadorModo</em></li>
+      <li><strong>T8.4</strong> — Componentes <em>CartaoAnimal</em> e <em>DetalheAnimal</em></li>
+      <li><strong>T8.5</strong> — Página principal de busca (integra tudo)</li>
+      <li><strong>T8.6</strong> — Testes de componente (Jest + React Testing Library + MSW)</li>
+      <li><strong>T8.7</strong> — Teste E2E (Playwright)</li>
+    </ol>
+
+    <h3>Como os dados fluem</h3>
+    <div class="fluxo">
+      <span class="box">Usuário digita</span>
+      <span class="seta">→</span>
+      <span class="box">BarraBusca (debounce 400ms)</span>
+      <span class="seta">→</span>
+      <span class="box">page.tsx (estado: termo + modo)</span>
+      <span class="seta">→</span>
+      <span class="box">useQuery / TanStack</span>
+      <span class="seta">→</span>
+      <span class="box">buscarAnimais()</span>
+      <span class="seta">→</span>
+      <span class="box">API .NET :5024</span>
+      <span class="seta">→</span>
+      <span class="box">grid de CartaoAnimal</span>
+      <span class="seta">→</span>
+      <span class="box">DetalheAnimal (modal)</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Contrato da API consumida</h2>
+    <table>
+      <tr><th>Endpoint</th><th>Descrição</th></tr>
+      <tr><td><code class="inline">GET /api/animais/buscar?q={q}&amp;modo={Textual|Semantica|Hibrida}&amp;limite={n}</code></td><td>Busca → <code class="inline">ResultadoBusca[]</code> (q vazio → 400)</td></tr>
+      <tr><td><code class="inline">GET /api/animais/{id}</code></td><td>Um animal → <code class="inline">Animal</code> ou 404</td></tr>
+      <tr><td><code class="inline">GET /api/animais?pagina={n}&amp;tamanho={n}</code></td><td>Lista paginada → <code class="inline">Animal[]</code></td></tr>
+    </table>
+    <div class="nota">
+      <strong>Atenção aos enums:</strong> os campos <code class="inline">dieta</code>, <code class="inline">habitat</code>
+      e <code class="inline">statusConservacao</code> chegam como <strong>números</strong> (enums serializados).
+      Foram criados mapas <em>int → rótulo PT</em> lendo a ordem real de declaração dos enums em
+      <code class="inline">backend/src/Buscador.Domain/Animais/</code>:
+      <ul>
+        <li><strong>Dieta</strong>: 0 Carnívoro · 1 Herbívoro · 2 Onívoro</li>
+        <li><strong>Habitat</strong>: 0 Floresta · 1 Oceano · 2 Deserto · 3 Savana · 4 Montanha · 5 Água doce · 6 Polar</li>
+        <li><strong>StatusConservação</strong>: 0 Pouco preocupante · 1 Quase ameaçado · 2 Vulnerável · 3 Em perigo · 4 Criticamente em perigo · 5 Extinto na natureza · 6 Extinto</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- T8.1 -->
+  <section class="card">
+    <div class="etapa-titulo"><span class="badge-etapa">T8.1</span><h2 style="margin:0;">TanStack Query + ambiente</h2></div>
+    <p class="objetivo">Habilitar o cache/estado de servidor (React Query) e apontar para a API local.</p>
+    <h3>O que foi feito</h3>
+    <ul>
+      <li>Instalado <code class="inline">@tanstack/react-query</code> (v5).</li>
+      <li>Criado o provider <code class="inline">Provedores</code> (<code class="inline">'use client'</code>) com um <code class="inline">QueryClient</code> guardado em <code class="inline">useState</code> (uma instância por sessão, não recriada a cada render).</li>
+      <li>O <code class="inline">layout.tsx</code> passou a envolver <code class="inline">{children}</code> com <code class="inline">&lt;Provedores&gt;</code> e ganhou título/descrição do projeto.</li>
+      <li>Criado <code class="inline">.env.local</code> com <code class="inline">NEXT_PUBLIC_API_URL=http://localhost:5024</code>.</li>
+    </ul>
+    <ul class="arquivos">
+      <li>frontend/src/app/provedores.tsx <em>(novo)</em></li>
+      <li>frontend/src/app/layout.tsx <em>(editado)</em></li>
+      <li>frontend/.env.local <em>(novo, fora do git)</em></li>
+    </ul>
+    <div class="nota">
+      <strong>Imprevisto resolvido (npm):</strong> o <code class="inline">npm i</code> quebrava com
+      <code class="inline">Invalid Version: ""</code>. Causa: uma entrada órfã no
+      <code class="inline">package-lock.json</code> para <code class="inline">@tailwindcss/oxide-wasm32-wasi</code>
+      (dependência opcional não instalada nesta plataforma) <strong>sem o campo <code class="inline">version</code></strong>.
+      Durante o <em>dedupe</em>, o npm fazia <code class="inline">semver.eq("", "4.3.1")</code> e estourava.
+      Correção: adicionar <code class="inline">"version": "4.3.1"</code> àquela entrada do lockfile.
+    </div>
+    <span class="commit">feat(front): configura TanStack Query e env da API</span>
+  </section>
+
+  <!-- T8.2 -->
+  <section class="card">
+    <div class="etapa-titulo"><span class="badge-etapa">T8.2</span><h2 style="margin:0;">Tipos + serviço da API</h2></div>
+    <p class="objetivo">Tipar o domínio no front e centralizar as chamadas HTTP.</p>
+    <h3>O que foi feito</h3>
+    <ul>
+      <li><code class="inline">types/animal.ts</code>: <code class="inline">ModoBusca</code>, <code class="inline">Animal</code>, <code class="inline">ResultadoBusca</code> + os mapas de rótulos dos enums (<code class="inline">rotulosDieta</code>, <code class="inline">rotulosHabitat</code>, <code class="inline">rotulosStatusConservacao</code>).</li>
+      <li><code class="inline">services/animais.ts</code>: <code class="inline">buscarAnimais(q, modo, limite=10)</code> e <code class="inline">obterAnimal(id)</code> (404 → <code class="inline">null</code>), usando <code class="inline">fetch</code> sobre <code class="inline">NEXT_PUBLIC_API_URL</code>.</li>
+    </ul>
+    <ul class="arquivos">
+      <li>frontend/src/types/animal.ts <em>(novo)</em></li>
+      <li>frontend/src/services/animais.ts <em>(novo)</em></li>
+    </ul>
+    <span class="commit">feat(front): tipos e servico da API (buscarAnimais, obterAnimal)</span>
+  </section>
+
+  <!-- T8.3 -->
+  <section class="card">
+    <div class="etapa-titulo"><span class="badge-etapa">T8.3</span><h2 style="margin:0;">BarraBusca + AlternadorModo</h2></div>
+    <p class="objetivo">Entrada de busca com debounce e seletor dos 3 modos. Estado elevado para a página.</p>
+    <h3>O que foi feito</h3>
+    <ul>
+      <li><code class="inline">BarraBusca</code>: input controlado com <strong>debounce de ~400ms</strong> (useEffect + setTimeout/clearTimeout) que chama <code class="inline">aoBuscar(termo)</code>.</li>
+      <li><code class="inline">AlternadorModo</code>: grupo "segmented" de 3 botões (Textual/Semântica/Híbrida) com destaque do modo ativo e <code class="inline">aria-pressed</code>.</li>
+      <li>Nenhum dos dois guarda o estado de negócio — recebem <em>props</em> e <em>callbacks</em>; quem detém <code class="inline">termo</code> e <code class="inline">modo</code> é a página.</li>
+    </ul>
+    <ul class="arquivos">
+      <li>frontend/src/components/busca/BarraBusca.tsx <em>(novo)</em></li>
+      <li>frontend/src/components/busca/AlternadorModo.tsx <em>(novo)</em></li>
+    </ul>
+    <span class="commit">feat(front): BarraBusca e AlternadorModo</span>
+  </section>
+
+  <!-- T8.4 -->
+  <section class="card">
+    <div class="etapa-titulo"><span class="badge-etapa">T8.4</span><h2 style="margin:0;">CartaoAnimal + DetalheAnimal</h2></div>
+    <p class="objetivo">Apresentação dos resultados — card resumido e modal de detalhe.</p>
+    <h3>O que foi feito</h3>
+    <ul>
+      <li><code class="inline">CartaoAnimal</code>: nome comum, nome científico (itálico), pílulas de <em>habitat</em> e <em>dieta</em> (via mapas), chips de <em>tags</em> e a <em>pontuação</em> (formatada como % quando entre 0 e 1). Card clicável e acessível (role/tabIndex/Enter-Espaço).</li>
+      <li><code class="inline">DetalheAnimal</code>: modal (overlay) com descrição, características, curiosidades, distribuição geográfica e status de conservação. Fecha ao clicar fora, no X ou com <strong>Esc</strong>; <code class="inline">role="dialog"</code>.</li>
+    </ul>
+    <ul class="arquivos">
+      <li>frontend/src/components/animais/CartaoAnimal.tsx <em>(novo)</em></li>
+      <li>frontend/src/components/animais/DetalheAnimal.tsx <em>(novo)</em></li>
+    </ul>
+    <span class="commit">feat(front): CartaoAnimal e DetalheAnimal (com rotulos dos enums)</span>
+  </section>
+
+  <!-- T8.5 -->
+  <section class="card">
+    <div class="etapa-titulo"><span class="badge-etapa">T8.5</span><h2 style="margin:0;">Página principal de busca</h2></div>
+    <p class="objetivo">Integra todos os componentes com o TanStack Query.</p>
+    <h3>O que foi feito</h3>
+    <ul>
+      <li>Estado elevado: <code class="inline">termo</code>, <code class="inline">modo</code> e <code class="inline">animalSelecionado</code>.</li>
+      <li><code class="inline">useQuery</code> com <code class="inline">queryKey: ["busca", termo, modo]</code> e <code class="inline">enabled</code> só com termo não vazio (não busca à toa).</li>
+      <li>Tratamento explícito (guard clauses) dos estados: <em>inicial</em>, <em>carregando</em>, <em>erro</em>, <em>vazio</em> e <em>grid de resultados</em>.</li>
+      <li>Clicar num card abre o <code class="inline">DetalheAnimal</code>.</li>
+    </ul>
+    <ul class="arquivos">
+      <li>frontend/src/app/page.tsx <em>(reescrito)</em></li>
+    </ul>
+    <span class="commit">feat(front): pagina principal de busca (3 modos)</span>
+  </section>
+
+  <!-- T8.6 -->
+  <section class="card">
+    <div class="etapa-titulo"><span class="badge-etapa">T8.6</span><h2 style="margin:0;">Testes de componente</h2></div>
+    <p class="objetivo">Jest + React Testing Library + MSW (mock da API), sem depender do backend.</p>
+    <h3>O que foi feito</h3>
+    <ul>
+      <li>Config do Jest via <code class="inline">next/jest</code> (transform SWC), ambiente <em>jsdom</em>, alias <code class="inline">@/</code>.</li>
+      <li>MSW com handler mockando <code class="inline">GET /api/animais/buscar</code>.</li>
+      <li><code class="inline">BarraBusca.test.tsx</code>: digitar dispara <code class="inline">aoBuscar</code> após o debounce (fake timers).</li>
+      <li><code class="inline">CartaoAnimal.test.tsx</code>: renderiza nome comum + rótulos de habitat/dieta.</li>
+      <li>Script <code class="inline">"test": "jest"</code> no <code class="inline">package.json</code>.</li>
+    </ul>
+    <ul class="arquivos">
+      <li>frontend/jest.config.ts · jest.polyfills.ts · jest.setup.ts <em>(novos)</em></li>
+      <li>frontend/tests/mocks/handlers.ts · server.ts <em>(novos)</em></li>
+      <li>frontend/src/components/**/*.test.tsx <em>(novos)</em></li>
+      <li>frontend/tsconfig.json <em>(chave <code class="inline">ts-node</code> p/ carregar a config .ts)</em></li>
+    </ul>
+    <div class="nota">
+      <strong>O ponto mais espinhoso da fase (MSW v2 + Jest + jsdom).</strong> Foi necessário, em ordem:
+      <ul>
+        <li><strong>Polyfills de Web APIs</strong> que o jsdom não expõe (via <code class="inline">undici</code> e módulos do Node): <code class="inline">TextEncoder/Decoder</code>, <code class="inline">ReadableStream/TransformStream/WritableStream</code>, <code class="inline">fetch/Request/Response/Headers</code>, <code class="inline">MessagePort</code> e <code class="inline">BroadcastChannel</code>. Usando <code class="inline">require()</code> (não <code class="inline">import</code>) para garantir a ordem: definir os globais <em>antes</em> de carregar o undici.</li>
+        <li>Globais definidos com <code class="inline">configurable: true</code> — o MSW <em>redefine</em> alguns (ex.: <code class="inline">Request</code>) ao iniciar.</li>
+        <li>O <code class="inline">next/jest</code> sobrescreve <code class="inline">transformIgnorePatterns</code>; como o MSW v2 e suas dependências são <strong>ESM puro</strong>, a config foi <strong>pós-processada</strong> para reaplicar o padrão e permitir transformá-las.</li>
+        <li><code class="inline">export {}</code> em <code class="inline">jest.polyfills.ts</code> para o TypeScript tratá-lo como módulo (senão os <code class="inline">const</code> colidem com os tipos globais do DOM no <code class="inline">next build</code>).</li>
+      </ul>
+      Resultado: <span class="ok">2 suítes, 2 testes ✓</span> com saída limpa (exit 0).
+    </div>
+    <span class="commit">test(front): componentes com Jest + RTL + MSW</span>
+  </section>
+
+  <!-- T8.7 -->
+  <section class="card">
+    <div class="etapa-titulo"><span class="badge-etapa">T8.7</span><h2 style="margin:0;">E2E com Playwright</h2></div>
+    <p class="objetivo">Teste de ponta a ponta do fluxo de busca no navegador.</p>
+    <h3>O que foi feito</h3>
+    <ul>
+      <li><code class="inline">playwright.config.ts</code>: <code class="inline">testDir: ./e2e</code> (não colide com os testes Jest <code class="inline">*.test.tsx</code>), projeto Chromium, <code class="inline">baseURL</code> :3000 e <code class="inline">webServer</code> que sobe <code class="inline">npm run dev</code>.</li>
+      <li><code class="inline">e2e/busca.spec.ts</code>: abre a home, digita uma busca, vê resultados, troca para Semântica e Híbrida e confirma resultados de novo.</li>
+      <li><code class="inline">.gitignore</code> atualizado para os artefatos do Playwright.</li>
+    </ul>
+    <ul class="arquivos">
+      <li>frontend/playwright.config.ts <em>(novo)</em></li>
+      <li>frontend/e2e/busca.spec.ts <em>(novo)</em></li>
+    </ul>
+    <div class="nota">
+      O E2E <strong>não foi executado</strong> agora (exige o backend semeado + o frontend no ar). Apenas foi
+      garantido que instala e compila — <code class="inline">npx playwright test --list</code> reconhece 1 teste.
+    </div>
+    <span class="commit">test(front): e2e de busca com Playwright</span>
+  </section>
+
+  <!-- Como rodar -->
+  <section class="card">
+    <h2>▶️ Como rodar localmente</h2>
+    <p>1) Subir a infraestrutura e o backend (na raiz e em <code class="inline">backend/</code>):</p>
+    <pre><span class="cmt"># na raiz do projeto</span>
+docker compose up -d
+docker exec ollama ollama pull bge-m3
+
+<span class="cmt"># em backend/</span>
+dotnet ef database update --project src/Buscador.Infrastructure --startup-project src/Buscador.Api
+dotnet run --project src/Buscador.Api   <span class="cmt"># sobe a API em http://localhost:5024</span></pre>
+
+    <p>2) Semear os dados e gerar os embeddings (uma vez):</p>
+    <pre>POST http://localhost:5024/api/animais/popular
+POST http://localhost:5024/api/animais/embeddings/gerar</pre>
+
+    <p>3) Rodar o frontend (em <code class="inline">frontend/</code>):</p>
+    <pre><span class="cmt"># em frontend/</span>
+npm run dev        <span class="cmt"># abre http://localhost:3000</span>
+npm run build      <span class="cmt"># build de produção</span>
+npm test           <span class="cmt"># Jest + RTL + MSW (não precisa do backend)</span>
+npx playwright test  <span class="cmt"># E2E (precisa de backend semeado + frontend no ar)</span></pre>
+
+    <div class="nota">
+      <strong>Resumo das dependências:</strong> os testes de componente (<code class="inline">npm test</code>)
+      <em>não</em> precisam do backend — o MSW intercepta as chamadas. Já o teste manual na tela
+      e o E2E (<code class="inline">npx playwright test</code>) precisam do backend rodando em
+      <code class="inline">http://localhost:5024</code> com dados semeados.
+    </div>
+  </section>
+
+  <!-- Estrutura final -->
+  <section class="card">
+    <h2>🗂️ Estrutura final do frontend</h2>
+    <pre>frontend/
+├── .env.local                 <span class="cmt"># NEXT_PUBLIC_API_URL (fora do git)</span>
+├── jest.config.ts             <span class="cmt"># Jest via next/jest + override ESM</span>
+├── jest.polyfills.ts          <span class="cmt"># Web APIs p/ MSW v2 em jsdom</span>
+├── jest.setup.ts              <span class="cmt"># jest-dom + ciclo do MSW server</span>
+├── playwright.config.ts
+├── e2e/
+│   └── busca.spec.ts
+├── tests/
+│   └── mocks/
+│       ├── handlers.ts        <span class="cmt"># mock de GET /api/animais/buscar</span>
+│       └── server.ts
+└── src/
+    ├── app/
+    │   ├── layout.tsx         <span class="cmt"># envolve com &lt;Provedores&gt;</span>
+    │   ├── provedores.tsx     <span class="cmt"># QueryClientProvider</span>
+    │   └── page.tsx           <span class="cmt"># página principal de busca</span>
+    ├── components/
+    │   ├── busca/
+    │   │   ├── BarraBusca.tsx (+ .test.tsx)
+    │   │   └── AlternadorModo.tsx
+    │   └── animais/
+    │       ├── CartaoAnimal.tsx (+ .test.tsx)
+    │       └── DetalheAnimal.tsx
+    ├── services/
+    │   └── animais.ts         <span class="cmt"># buscarAnimais, obterAnimal</span>
+    └── types/
+        └── animal.ts          <span class="cmt"># tipos + mapas dos enums</span></pre>
+  </section>
+
+  <section class="card">
+    <h2>✅ Estado final</h2>
+    <ul>
+      <li><span class="ok">npm run build</span> — verde em todas as 7 etapas.</li>
+      <li><span class="ok">npm test</span> — 2 suítes / 2 testes passando, exit 0.</li>
+      <li><span class="ok">Playwright</span> — instalado e compilando (1 teste listado).</li>
+      <li><span class="ok">7 commits</span> semânticos enviados para <code class="inline">origin/main</code>.</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  Deep Sparrow — Buscador de Animais · Fase 8 (Frontend Next.js) · documento gerado em 16/06/2026
+</footer>
+</body>
+</html>
