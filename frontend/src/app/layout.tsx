@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Provedores } from "./provedores";
+import NavegacaoTopo from "@/components/layout/NavegacaoTopo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,10 +26,17 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="pt-BR"
+      className={`${geistSans.variable} ${geistMono.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col"><Provedores>{children}</Provedores></body>
+      <body className="min-h-full" style={{ background: "#091716" }}>
+        <Provedores>
+          <NavegacaoTopo />
+          <main className="pt-14 pb-6">
+            {children}
+          </main>
+        </Provedores>
+      </body>
     </html>
   );
 }
