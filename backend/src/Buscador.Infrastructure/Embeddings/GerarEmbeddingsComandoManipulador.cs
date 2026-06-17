@@ -30,7 +30,6 @@ public sealed class GerarEmbeddingsComandoManipulador
         GerarEmbeddingsComando request,
         CancellationToken cancellationToken)
     {
-        // Idempotente: so processa animais que ainda nao possuem fragmentos.
         var idsSemFragmentos = await _contexto.Database
             .SqlQuery<IdSemFragmentos>(
                 $"""
@@ -56,17 +55,22 @@ public sealed class GerarEmbeddingsComandoManipulador
                 if (animal is null)
                     continue;
 
-                foreach (var fragmento in FragmentadorAnimal.Fragmentar(animal))
-                {
-                    var vetor = await _servicoEmbedding.GerarAsync(
-                        fragmento, TipoTextoEmbedding.Documento, cancellationToken);
+                var fragmentos = FragmentadorAnimal.Fragmentar(animal);
+                if (fragmentos.Count == 0)
+                    continue;
 
+                // Lote: todos os fragmentos do animal numa unica chamada ao Ollama.
+                var vetores = await _servicoEmbedding.GerarVariosAsync(
+                    fragmentos, TipoTextoEmbedding.Documento, cancellationToken);
+
+                for (var j = 0; j < fragmentos.Count; j++)
+                {
                     var vetorString = "[" + string.Join(",",
-                        vetor.Select(f => f.ToString("G", CultureInfo.InvariantCulture))) + "]";
+                        vetores[j].Select(f => f.ToString("G", CultureInfo.InvariantCulture))) + "]";
 
                     await _contexto.Database.ExecuteSqlRawAsync(
                         "INSERT INTO fragmentos_animal (id, animal_id, texto, embedding) VALUES ({0}, {1}, {2}, {3}::vector)",
-                        Guid.NewGuid(), id, fragmento, vetorString);
+                        Guid.NewGuid(), id, fragmentos[j], vetorString);
                 }
 
                 total++;
