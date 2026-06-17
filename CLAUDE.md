@@ -39,7 +39,7 @@ npx playwright test
 ```
 
 ## Convenções globais
-- **Código**: inglês (classes, métodos, variáveis, arquivos)
+- **Código**: português SEM acento (classes, métodos, variáveis, arquivos, rotas HTTP, campos JSON). Nomes de camadas/projetos permanecem em inglês (`Domain`, `Application`, `Infrastructure`, `Api`)
 - **Dados e docs**: português (conteúdo dos animais, comentários explicativos)
 - **Regra de dependência**: `Domain` ← `Application` ← `Infrastructure` ← `Api`
 - `Buscador.Domain` nunca referencia EF Core, Npgsql, MediatR ou pacote externo

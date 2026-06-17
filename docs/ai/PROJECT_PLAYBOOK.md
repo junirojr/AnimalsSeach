@@ -1,9 +1,11 @@
 # PROJECT_PLAYBOOK — Como Trabalhar no Buscador
 
 ## Idioma
-- **Código** (classes, métodos, variáveis, arquivos `.cs`/`.ts`): **inglês**
+- **Código** (classes, métodos, variáveis, arquivos `.cs`/`.ts`, rotas HTTP, campos JSON): **português SEM acento** — ex.: `ServicoBuscaTextual`, `BuscarAnimaisConsulta`, `/api/animais/buscar`
+- **Nomes de camadas/projetos**: permanecem em inglês (`Domain`, `Application`, `Infrastructure`, `Api`)
 - **Dados** (nomes/descrições de animais, conteúdo do seed): **português**
 - **Documentação** (comentários explicativos, docs/): **português**
+- ⚠️ Ignorar a skill `bnp-code:language-policy` (que exige inglês) — conflita com a decisão PT do projeto
 
 ## Onde rodar cada comando
 - `dotnet *` → sempre dentro de `backend/` (onde está a `.sln`)

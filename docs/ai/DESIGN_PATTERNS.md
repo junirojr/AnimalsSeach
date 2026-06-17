@@ -30,22 +30,22 @@ Se o Domain precisar referenciar EF Core → está errado. Mova para Infrastruct
 - Lança `ArgumentException` para dados inválidos
 
 ## 3. CQRS com MediatR
-- **Query**: retorna dados, sem efeito colateral (`GetAnimalByIdQuery`)
-- **Command**: muda estado, pode retornar resultado (`SeedAnimalsCommand`)
-- **Handler**: implementa `IRequestHandler<TRequest, TResponse>`
+- **Consulta (Query)**: retorna dados, sem efeito colateral (`ObterAnimalPorIdConsulta`, `BuscarAnimaisConsulta`)
+- **Comando (Command)**: muda estado, pode retornar resultado (`PopularAnimaisComando`, `GerarEmbeddingsComando`)
+- **Manipulador (Handler)**: implementa `IRequestHandler<TRequest, TResponse>` (ex.: `ObterAnimalPorIdConsultaManipulador`)
 - **Por quê**: desacopla quem pede de quem executa; cada caso de uso é isolado e testável
 
 ## 4. Repository Pattern
-- Interface definida no Domain (`IAnimalRepository`)
-- Implementação na Infrastructure (`AnimalRepository`)
+- Interface definida no Domain (`IRepositorioAnimal`)
+- Implementação na Infrastructure (`RepositorioAnimal`)
 - A Application nunca sabe se é Postgres, MongoDB ou memória
 - **Por quê**: testabilidade (Moq na Application, Testcontainers na Api)
 
-## 5. Shadow Properties (EF Core)
-- `search_vector` e `embedding` existem no banco e no mapeamento EF
-- Mas NÃO existem na classe `Animal` do Domain
-- Acessados via `entry.Property("search_vector").CurrentValue`
-- **Por quê**: manter o Domain limpo, sem deps de Npgsql/pgvector
+## 5. Shadow Property + acesso via SQL cru
+- `search_vector` (tsvector) é **shadow property**: existe no banco e no mapeamento EF, mas NÃO na classe `Animal`.
+- `embedding` (vector) e a tabela `fragmentos_animal` **NÃO são mapeados no EF** — acesso sempre por **SQL cru**
+  (`ExecuteSqlRaw`/`SqlQuery`), para usar os operadores do pgvector (`<=>`) sem acoplar o ORM à extensão.
+- **Por quê**: manter o Domain limpo (sem deps de Npgsql/pgvector) e evitar rework de migration em coluna criada via SQL.
 
 ## 6. Reciprocal Rank Fusion (RRF)
 ```
@@ -53,13 +53,23 @@ score = Σ 1 / (k + rank_i)    onde k = 60 (padrão)
 ```
 - Combina ranking FTS + ranking semântico usando posição, não score bruto
 - `k=60` suaviza o peso excessivo das primeiras posições
-- **Quando usar**: modo `hybrid` na `SearchAnimalsQuery`
+- **Quando usar**: modo `Hibrida` em `BuscarAnimaisConsulta`; a fusão pura fica em `FusaoRrf` (Application, testável)
 - **Por quê**: FTS e semântico têm escalas diferentes; RRF normaliza pelo rank
 
 ## 7. Minimal API com extensões de endpoint
 ```csharp
-app.MapAnimalEndpoints();  // extensão em AnimalEndpoints.cs
+app.MapearEndpointsAnimais();  // extensao em Endpoints/EndpointsAnimais.cs (planejado na F7)
 ```
 - Cada recurso tem seu próprio arquivo de extensão
 - `Program.cs` fica limpo (só wiring)
 - Endpoints fazem: ler → mediator.Send → retornar resultado HTTP
+- **Estado atual:** os endpoints ainda estão **inline no `Program.cs`** (versão mínima); a extração para
+  `EndpointsAnimais.cs` é tarefa da Fase 7.
+
+## 8. Multi-vetor por fragmentos + max-sim (busca semântica)
+- Cada animal vira **vários** embeddings (chunks): nome + cada frase + cada tag **contextualizada** (`"Lobo: predador"`).
+- `FragmentadorAnimal` (Application, pura/testável) faz a divisão; os vetores ficam em `fragmentos_animal`.
+- Busca por **max-sim**: o animal pontua pela **menor distância** entre seus fragmentos
+  (`MIN(embedding <=> q) GROUP BY animal`) — vence pelo *melhor* fragmento, não pela média.
+- **Por quê**: um vetor único dilui atributos na média; o multi-vetor isola cada atributo. Contextualizar a
+  tag com o nome evita chunks idênticos entre animais que compartilham a mesma tag (ex.: "predador").

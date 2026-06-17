@@ -37,4 +37,4 @@ como projeto de aprendizado progressivo em C# / .NET 10 com Clean Architecture e
 - Tudo local e gratuito (sem OpenAI, sem Elastic, sem cloud pago)
 - Senhas de dev (`buscador/buscador`) são intencionais e locais
 - Seed começa com 10 animais (MVP); expande para 50 em T9.0
-- Campos `SearchVector` e `Embedding` como shadow properties (Domain limpo)
+- `SearchVector` é shadow property; `Embedding` e os fragmentos (`fragmentos_animal`) são acessados via SQL cru (não mapeados no EF). Domain limpo nos dois casos.

@@ -100,8 +100,9 @@ fica na Infrastructure e nunca vaza para o Domain.
 | `Tags` | `string[]` | Palavras-chave para busca e categorização |
 | `Curiosidades` | `string` | Fatos curiosos sobre o animal |
 
-> **Campos de busca ausentes do Domain:** `VetorBusca` (tsvector) e `Embedding` (vector 1024d, bge-m3)
-> são shadow properties mapeadas na Infrastructure (Fase 2). O Domain permanece limpo.
+> **Campos de busca ausentes do Domain:** `VetorBusca` (tsvector, shadow property mapeada na Infra) e
+> `Embedding` (vector 1024d, bge-m3 — acesso via **SQL cru**, não mapeado no EF; idem `fragmentos_animal`).
+> O Domain permanece limpo nos dois casos.
 
 ---
 
